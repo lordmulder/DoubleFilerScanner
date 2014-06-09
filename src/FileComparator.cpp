@@ -31,6 +31,7 @@ FileComparator::~FileComparator(void)
 
 void FileComparator::run(void)
 {
+	m_hashes.clear();
 	m_pendingTasks = 0;
 
 	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
@@ -44,6 +45,24 @@ void FileComparator::run(void)
 	{
 		qWarning("Thread is about to exit while there still are pending directories!");
 	}
+
+	quint32 unqiueFiles = 0;
+
+	const QList<QByteArray> keys = m_hashes.uniqueKeys();
+	for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
+	{
+		qDebug("Testing: %s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
+		while(m_hashes.count(*iter) == 1)
+		{
+			if(m_hashes.remove(*iter) != 1)
+			{
+				qWarning("Removal of non-duplicate file has failed!");
+			}
+			unqiueFiles++;
+		}
+	}
+
+	qDebug("Removed %u unqiue files -> %d duplicate files remain!", unqiueFiles, m_hashes.uniqueKeys().size());
 
 	qDebug("Thread will exit!");
 }
@@ -62,6 +81,11 @@ void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 {
 	qDebug("Hash: %s <-- %s", hash.toHex().constData(), path.toUtf8().constData());
 	
+	if(!(hash.isEmpty() || path.isEmpty()))
+	{
+		m_hashes.insertMulti(hash, path);
+	}
+
 	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
 	{
 		scanNextFile(m_files.dequeue());

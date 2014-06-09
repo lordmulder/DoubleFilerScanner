@@ -4,6 +4,7 @@
 #include <QRunnable>
 #include <QStringList>
 #include <QQueue>
+#include <QHash>
 
 class QThreadPool;
 class QEventLoop;
@@ -47,5 +48,6 @@ protected:
 	QThreadPool *m_pool;
 
 	QQueue<QString> m_files;
+	QHash<QByteArray, QString> m_hashes;
 	quint64 m_pendingTasks;
 };

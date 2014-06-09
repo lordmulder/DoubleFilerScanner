@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 	qDebug("All rights reserved.\n");
 
 	QApplication application(argc, argv);
-	DirectoryScanner *scanner = new DirectoryScanner("C:/");
+	DirectoryScanner *scanner = new DirectoryScanner("D:/Gimp-2.8");
 	
 	scanner->start();
 	scanner->wait();
