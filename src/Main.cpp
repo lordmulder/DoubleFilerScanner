@@ -3,6 +3,7 @@
 #include <QApplication>
 
 #include "DirectoryScanner.h"
+#include "FileComparator.h"
 
 int main(int argc, char* argv[])
 {
@@ -11,19 +12,21 @@ int main(int argc, char* argv[])
 	qDebug("All rights reserved.\n");
 
 	QApplication application(argc, argv);
-	
 	DirectoryScanner *scanner = new DirectoryScanner("C:/");
-	scanner->moveToThread(scanner);
 	
 	scanner->start();
 	scanner->wait();
 
 	const QStringList &files = scanner->getFiles();
-	for(QStringList::ConstIterator iter = files.constBegin(); iter != files.constEnd(); iter++)
-	{
-		qDebug("File: %s", iter->toUtf8().constData());
-	}
-
+	FileComparator *comparator = new FileComparator(files);
 	delete scanner;
+
+	comparator->start();
+	comparator->wait();
+
+	delete comparator;
+	
+	qDebug("COMPLETED.");
+
 	return application.exec();
 }

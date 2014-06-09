@@ -27,9 +27,18 @@
     <ClCompile Include="tmp\Common\moc\MOC_DirectoryScanner.cpp">
       <Filter>Source Files\MOC</Filter>
     </ClCompile>
+    <ClCompile Include="src\FileComparator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\Common\moc\MOC_FileComparator.cpp">
+      <Filter>Source Files\MOC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\DirectoryScanner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FileComparator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -21,6 +21,7 @@ DirectoryScanner::DirectoryScanner(const QString &directory, const bool recursiv
 {
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
+	moveToThread(this);
 }
 
 DirectoryScanner::~DirectoryScanner(void)
@@ -135,6 +136,9 @@ void DirectoryScannerTask::run(void)
 			}
 		}
 	}
+
+	files.sort();
+	dirs.sort();
 
 	emit directoryAnalyzed(&files, &dirs);
 }
