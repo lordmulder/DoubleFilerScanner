@@ -38,6 +38,8 @@ public:
 	FileComparator(const QStringList &files);
 	virtual ~FileComparator(void);
 
+	const QHash<QByteArray, QStringList> &getDuplicates(void) const;
+
 private slots:
 	void fileDone(const QByteArray &hash, const QString &path);
 	
@@ -49,5 +51,6 @@ protected:
 
 	QQueue<QString> m_files;
 	QHash<QByteArray, QString> m_hashes;
+	QHash<QByteArray, QStringList> m_duplicates;
 	quint64 m_pendingTasks;
 };

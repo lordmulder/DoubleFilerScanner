@@ -14,6 +14,7 @@
     <ClCompile Include="src\DirectoryScanner.cpp" />
     <ClCompile Include="src\FileComparator.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\System.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_DirectoryScanner.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_FileComparator.cpp" />
   </ItemGroup>
@@ -36,6 +37,16 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="src\System.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DoubleFileScanner.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1F2F5657-68CC-4A78-A900-1929DDE3713F}</ProjectGuid>

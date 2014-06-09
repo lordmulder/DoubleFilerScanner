@@ -10,6 +10,7 @@
 #include <cassert>
 
 static const quint64 MAX_ENQUEUED_TASKS = 128;
+static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 
 //=======================================================================================
 // File Comparator
@@ -25,13 +26,16 @@ FileComparator::FileComparator(const QStringList &files)
 
 FileComparator::~FileComparator(void)
 {
-	qDebug("FileComparator deleted.");
+	//qDebug("FileComparator deleted.");
 	delete m_pool;
 }
 
 void FileComparator::run(void)
 {
+	qDebug("[Analyzing Files]");
+
 	m_hashes.clear();
+	m_duplicates.clear();
 	m_pendingTasks = 0;
 
 	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
@@ -46,25 +50,20 @@ void FileComparator::run(void)
 		qWarning("Thread is about to exit while there still are pending directories!");
 	}
 
-	quint32 unqiueFiles = 0;
+	qDebug("\n[Searching Duplicates]");
 
 	const QList<QByteArray> keys = m_hashes.uniqueKeys();
 	for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
 	{
-		qDebug("Testing: %s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
-		while(m_hashes.count(*iter) == 1)
+		qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
+		if(m_hashes.count(*iter) > 1)
 		{
-			if(m_hashes.remove(*iter) != 1)
-			{
-				qWarning("Removal of non-duplicate file has failed!");
-			}
-			unqiueFiles++;
+			m_duplicates.insert((*iter), m_hashes.values(*iter));
 		}
 	}
 
-	qDebug("Removed %u unqiue files -> %d duplicate files remain!", unqiueFiles, m_hashes.uniqueKeys().size());
-
-	qDebug("Thread will exit!");
+	qDebug("Found %d files with duplicates!", m_duplicates.count());
+	qDebug("Thread will exit!\n");
 }
 
 void FileComparator::scanNextFile(const QString path)
@@ -79,8 +78,6 @@ void FileComparator::scanNextFile(const QString path)
 
 void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 {
-	qDebug("Hash: %s <-- %s", hash.toHex().constData(), path.toUtf8().constData());
-	
 	if(!(hash.isEmpty() || path.isEmpty()))
 	{
 		m_hashes.insertMulti(hash, path);
@@ -100,6 +97,16 @@ void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 	}
 }
 
+const QHash<QByteArray, QStringList> &FileComparator::getDuplicates(void) const
+{
+	if(this->isRunning())
+	{
+		qWarning("Result requested while thread is still running!");
+		return EMPTY_DUPLICATES_LIST;
+	}
+
+	return m_duplicates;
+}
 
 //=======================================================================================
 // File Comparator Task
@@ -118,7 +125,7 @@ FileComparatorTask::~FileComparatorTask(void)
 
 void FileComparatorTask::run(void)
 {
-	qDebug("Checking: %s", m_filePath.toUtf8().constData());
+	qDebug("%s", m_filePath.toUtf8().constData());
 
 	QFile file(m_filePath);
 

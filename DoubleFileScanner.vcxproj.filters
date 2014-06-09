@@ -33,13 +33,34 @@
     <ClCompile Include="tmp\Common\moc\MOC_FileComparator.cpp">
       <Filter>Source Files\MOC</Filter>
     </ClCompile>
+    <ClCompile Include="src\System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\DirectoryScanner.h">
+    <ClInclude Include="src\System.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\FileComparator.h">
+    <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\DirectoryScanner.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\FileComparator.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DoubleFileScanner.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@
 #include <cassert>
 
 static const quint64 MAX_ENQUEUED_TASKS = 128;
+static const QStringList EMPTY_STRINGLIST;
 
 //=======================================================================================
 // Directory Scanner
@@ -26,12 +27,14 @@ DirectoryScanner::DirectoryScanner(const QString &directory, const bool recursiv
 
 DirectoryScanner::~DirectoryScanner(void)
 {
-	qDebug("DirectoryScanner deleted.");
+	//qDebug("DirectoryScanner deleted.");
 	delete m_pool;
 }
 
 void DirectoryScanner::run(void)
 {
+	qDebug("[Scanning Directory]");
+
 	m_files.clear();
 	m_pendingDirs.clear();
 	m_pendingTasks = 0;
@@ -47,7 +50,7 @@ void DirectoryScanner::run(void)
 	qDebug("Found %d files!", m_files.count());
 	m_files.sort();
 
-	qDebug("Thread will exit!");
+	qDebug("Thread will exit!\n");
 }
 
 void DirectoryScanner::scanDirectory(const QString path)
@@ -87,6 +90,7 @@ const QStringList &DirectoryScanner::getFiles(void) const
 	if(this->isRunning())
 	{
 		qWarning("Result requested while thread is still running!");
+		return EMPTY_STRINGLIST;
 	}
 
 	return m_files;
@@ -109,7 +113,7 @@ DirectoryScannerTask::~DirectoryScannerTask(void)
 
 void DirectoryScannerTask::run(void)
 {
-	qDebug("Scanning: %s", m_directory.toUtf8().constData());
+	qDebug("%s", m_directory.toUtf8().constData());
 
 	QStringList files, dirs;
 	QDirIterator iter(m_directory);
