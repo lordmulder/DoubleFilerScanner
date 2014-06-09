@@ -1,0 +1,10 @@
+*.opensdf
+*.sdf
+*.suo
+*.user
+*/tmp/*
+/__old__
+/bin
+/ipch
+/doc
+/tmp
