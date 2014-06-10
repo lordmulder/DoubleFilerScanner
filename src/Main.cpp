@@ -8,6 +8,7 @@
 #include <QProgressDialog>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QImageReader>
 
 #include "Config.h"
 #include "System.h"
@@ -35,10 +36,35 @@ protected:
 	}
 };
 
-static int double_file_scanner(int argc, char* argv[])
+static QApplication *init_qt(int argc, char* argv[])
 {
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
+	qDebug("Using Qt v%s-%s [%s], compiled with Qt v%s [%s]\n", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), QT_VERSION_STR, QT_PACKAGEDATE_STR);
 
+	QApplication *application = new QApplication(argc, argv);
+
+	QApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
+	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
+
+	QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
+	static const char *imageformats[] = {"bmp", "png", "jpg", "gif", "ico", "xpm", NULL};
+	for(int i = 0; imageformats[i]; i++)
+	{
+		if(!supportedFormats.contains(imageformats[i]))
+		{
+			qFatal("Qt initialization error: QImageIOHandler for '%s' missing!", imageformats[i]);
+			return false;
+		}
+	}
+	
+	application->setWindowIcon(QIcon(":/res/DoubleFileScanner.png"));
+	application->setStyle(new QPlastiqueStyle());
+	
+	return application;
+}
+
+static int double_file_scanner(int argc, char* argv[])
+{
 	qDebug("Double File Scanner, Version %u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH);
 	qDebug("Copyright (c) 2004-2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.");
 	qDebug("Built on %s at %s with %s for %s.\n", DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH);
@@ -47,15 +73,7 @@ static int double_file_scanner(int argc, char* argv[])
 	qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
 	qDebug("Note that this program is distributed with ABSOLUTELY NO WARRANTY.\n");
 	
-	qDebug("Using Qt v%s-%s [%s], compiled with Qt v%s [%s]\n", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), QT_VERSION_STR, QT_PACKAGEDATE_STR);
-
-	QApplication application(argc, argv);
-
-	QApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
-	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
-
-	application.setWindowIcon(QIcon(":/icons/DubleFileScanner.png"));
-	application.setStyle(new QPlastiqueStyle());
+	QApplication *application = init_qt(argc, argv);
 	
 	//------------------------------------------------------------------------
 	// Select Directory
