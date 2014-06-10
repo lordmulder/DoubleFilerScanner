@@ -11,12 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Config.cpp" />
     <ClCompile Include="src\DirectoryScanner.cpp" />
     <ClCompile Include="src\FileComparator.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\System.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_DirectoryScanner.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_FileComparator.cpp" />
+    <ClCompile Include="tmp\Common\rcc\RCC_DoubleFileScanner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\DirectoryScanner.h">
@@ -40,13 +42,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\Config.h" />
     <ClInclude Include="src\System.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DoubleFileScanner.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico" />
+    <CustomBuild Include="DoubleFileScanner.qrc">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\rcc.exe" -o "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp" -name "%(Filename)" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">RCC "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp;%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1F2F5657-68CC-4A78-A900-1929DDE3713F}</ProjectGuid>
@@ -93,7 +101,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;QT_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -111,8 +119,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;QT_NO_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

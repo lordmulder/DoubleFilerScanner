@@ -16,6 +16,9 @@
     <Filter Include="Source Files\MOC">
       <UniqueIdentifier>{bcb9ef9d-13cb-4d08-9d79-5b8bb08c4e48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\RCC">
+      <UniqueIdentifier>{a77e9f3e-2ca7-4bc8-ae33-f264316ee29f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -36,12 +39,21 @@
     <ClCompile Include="src\System.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tmp\Common\rcc\RCC_DoubleFileScanner.cpp">
+      <Filter>Source Files\RCC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\System.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,15 +64,13 @@
     <CustomBuild Include="src\FileComparator.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="DoubleFileScanner.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DoubleFileScanner.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
 </Project>

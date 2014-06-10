@@ -2,4 +2,6 @@
 
 #include <QString>
 
-void initializeConsole(const QString &title);
+void crashHandler(const char *message);
+void initConsole(void);
+void initErrorHandlers(void);

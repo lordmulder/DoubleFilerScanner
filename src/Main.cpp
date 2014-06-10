@@ -1,6 +1,7 @@
 // ConsoleApplication1.cpp : Defines the entry point for the console application.
 
 #include <QApplication>
+#include <QLibraryInfo>
 #include <QPlastiqueStyle>
 #include <QTextCodec>
 #include <QFileDialog>
@@ -8,6 +9,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 
+#include "Config.h"
 #include "System.h"
 #include "DirectoryScanner.h"
 #include "FileComparator.h"
@@ -33,16 +35,26 @@ protected:
 	}
 };
 
-int main(int argc, char* argv[])
+static int double_file_scanner(int argc, char* argv[])
 {
-	initializeConsole(QString("Double File Scanner [%1]").arg(__DATE__));
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 
-	qDebug("Double File Scanner [%s]", __DATE__);
-	qDebug("Copyright (C) 2014 LoRd_MuldeR <mulder2@gmx.de>.");
-	qDebug("All rights reserved.\n");
+	qDebug("Double File Scanner, Version %u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH);
+	qDebug("Copyright (c) 2004-2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.");
+	qDebug("Built on %s at %s with %s for %s.\n", DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH);
+
+	qDebug("This program is free software: you can redistribute it and/or modify");
+	qDebug("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
+	qDebug("Note that this program is distributed with ABSOLUTELY NO WARRANTY.\n");
+	
+	qDebug("Using Qt v%s-%s [%s], compiled with Qt v%s [%s]\n", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), QT_VERSION_STR, QT_PACKAGEDATE_STR);
 
 	QApplication application(argc, argv);
+
+	QApplication::setLibraryPaths(QStringList() << QApplication::applicationDirPath());
+	qDebug("Library Path:\n%s\n", QApplication::libraryPaths().first().toUtf8().constData());
+
+	application.setWindowIcon(QIcon(":/icons/DubleFileScanner.png"));
 	application.setStyle(new QPlastiqueStyle());
 	
 	//------------------------------------------------------------------------
@@ -137,4 +149,45 @@ int main(int argc, char* argv[])
 	delete comparator;
 
 	return EXIT_SUCCESS;
+}
+
+int main_ex(int argc, char* argv[])
+{
+	try
+	{
+		initConsole();
+		return double_file_scanner(argc, argv);
+	}
+	catch(std::exception &e)
+	{
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled C++ exception error: %s\n\n", e.what());
+		crashHandler(e.what());
+	}
+	catch(...)
+	{
+		fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled unknown C++ exception error!\n\n");
+		crashHandler("Unhandeled unknown C++ exception, application will exit!");
+	}
+}
+
+int main(int argc, char* argv[])
+{
+	if(DOUBLESCANNER_DEBUG)
+	{
+		initConsole();
+		return double_file_scanner(argc, argv);
+	}
+	else
+	{
+		__try
+		{
+			initErrorHandlers();
+			return main_ex(argc, argv);
+		}
+		__except(1)
+		{
+			fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled structured exception error!\n\n");
+			crashHandler("Unhandeled structured exception, application will exit!");
+		}
+	}
 }

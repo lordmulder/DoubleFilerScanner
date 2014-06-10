@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource>
+    <file>res/DoubleFileScanner.png</file>
+    <file>res/Button_About.png</file>
+    <file>res/Button_Exit.png</file>
+    <file>res/Button_Start.png</file>
+  </qresource>
+</RCC>
