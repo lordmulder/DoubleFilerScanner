@@ -16,11 +16,13 @@
       <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWChar_tAsBuiltInType>
       <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWChar_tAsBuiltInType>
     </ClCompile>
+    <ClCompile Include="src\Model_Duplicates.cpp" />
     <ClCompile Include="src\Thread_DirectoryScanner.cpp" />
     <ClCompile Include="src\Thread_FileComparator.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Window_Main.cpp" />
     <ClCompile Include="src\System.cpp" />
+    <ClCompile Include="tmp\Common\moc\MOC_Model_Duplicates.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_DirectoryScanner.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_FileComparator.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Window_Main.cpp" />
@@ -50,6 +52,14 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Config.h" />
     <CustomBuild Include="src\Window_Main.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\Model_Duplicates.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>

@@ -63,6 +63,12 @@
     <ClCompile Include="src\extra\qtmain_win.cpp">
       <Filter>Source Files\Third-Party</Filter>
     </ClCompile>
+    <ClCompile Include="src\Model_Duplicates.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\Common\moc\MOC_Model_Duplicates.cpp">
+      <Filter>Source Files\Generated\MOC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\System.h">
@@ -72,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model_Duplicates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
