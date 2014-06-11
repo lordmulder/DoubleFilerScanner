@@ -1,6 +1,8 @@
 #include "Thread_FileComparator.h"
 
 #include "Model_Duplicates.h"
+#include "Config.h"
+#include "System.h"
 
 #include <QThreadPool>
 #include <QDir>
@@ -28,19 +30,18 @@ FileComparator::FileComparator(DuplicatesModel *model)
 	m_completedFileCount = 0;
 	m_totalFileCount = m_files.count();
 	m_progressValue = -1;
-	
-	moveToThread(this);
 }
 
 FileComparator::~FileComparator(void)
 {
 	//qDebug("FileComparator deleted.");
-	delete m_pool;
+	MY_DELETE(m_pool);
 }
 
 void FileComparator::run(void)
 {
 	qDebug("[Analyzing Files]");
+	//qWarning("FileComparator::run: Current thread id = %u", getCurrentThread());
 
 	m_hashes.clear();
 	m_pendingTasks = 0;

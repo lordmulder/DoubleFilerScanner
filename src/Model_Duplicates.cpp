@@ -104,7 +104,7 @@ QModelIndex DuplicatesModel::index(int row, int column, const QModelIndex &paren
 		parentItem = static_cast<DuplicateItem*>(parent.internalPointer());
 	}
 
-	if((row >= 0) && (row < parentItem->childCount()))
+	if(parentItem && (row >= 0) && (row < parentItem->childCount()))
 	{
 		return createIndex(row, column, parentItem->child(row));
 	}
@@ -122,7 +122,8 @@ QModelIndex DuplicatesModel::parent(const QModelIndex &index) const
 		item = static_cast<DuplicateItem*>(index.internalPointer());
 	}
 
-	if(DuplicateItem *parentItem = item->parent())
+	DuplicateItem *parentItem = item->parent();
+	if(parentItem && (parentItem != m_root))
 	{
 		return createIndex(parentItem->row(), 0, parentItem);
 	}

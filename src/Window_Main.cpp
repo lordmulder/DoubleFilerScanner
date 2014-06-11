@@ -4,6 +4,7 @@
 #include "UIC_Window_Main.h"
 
 #include "Config.h"
+#include "System.h"
 #include "Thread_DirectoryScanner.h"
 #include "Thread_FileComparator.h"
 #include "Model_Duplicates.h"
@@ -30,6 +31,8 @@ MainWindow::MainWindow(void)
 :
 	ui(new Ui::MainWindow())
 {
+	//qWarning("MainWindow::MainWindow: Current thread id = %u", getCurrentThread());
+
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
 
@@ -117,8 +120,9 @@ void MainWindow::startScan(void)
 
 	if(!path.isEmpty())
 	{
-		UNSET_MODEL(ui->treeView);
+		//qWarning("MainWindow::startScan: Current thread id = %u", getCurrentThread());
 
+		UNSET_MODEL(ui->treeView);
 		setButtonsEnabled(false);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
 	
@@ -152,6 +156,7 @@ void MainWindow::fileComparatorFinished(void)
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(m_model->duplicateCount())));
 
+	UNSET_MODEL(ui->treeView);
 	ui->treeView->setModel(m_model);
 
 	QApplication::beep();

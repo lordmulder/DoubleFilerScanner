@@ -140,3 +140,8 @@ void crashHandler(const char *message)
 		TerminateProcess(GetCurrentProcess(), 666);
 	}
 }
+
+quint32 getCurrentThread(void)
+{
+	return GetCurrentThreadId();
+}

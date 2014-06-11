@@ -1,5 +1,8 @@
 #include "Thread_DirectoryScanner.h"
 
+#include "Config.h"
+#include "System.h"
+
 #include <QThreadPool>
 #include <QDir>
 #include <QDirIterator>
@@ -21,18 +24,18 @@ DirectoryScanner::DirectoryScanner(const bool recursive)
 {
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
-	moveToThread(this);
 }
 
 DirectoryScanner::~DirectoryScanner(void)
 {
 	//qDebug("DirectoryScanner deleted.");
-	delete m_pool;
+	MY_DELETE(m_pool);
 }
 
 void DirectoryScanner::run(void)
 {
 	qDebug("[Scanning Directory]");
+	//qWarning("DirectoryScanner::run: Current thread id = %u", getCurrentThread());
 
 	m_files.clear();
 	m_pendingTasks = 0;
