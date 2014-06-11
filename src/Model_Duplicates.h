@@ -2,6 +2,9 @@
 
 #include <QAbstractItemModel>
 #include <QStringList>
+#include <QReadwriteLock>
+
+class DuplicateItem;
 
 //DuplicatesModel class
 class DuplicatesModel: public QAbstractItemModel
@@ -9,7 +12,7 @@ class DuplicatesModel: public QAbstractItemModel
 	Q_OBJECT
 
 public:
-	DuplicatesModel(const QHash<QByteArray, QStringList> &data);
+	DuplicatesModel(void);
 	virtual ~DuplicatesModel(void);
 	
 	//QAbstractItemModel
@@ -19,7 +22,16 @@ public:
 	virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
+	unsigned int duplicateCount(void) const;
+	void addDuplicate(const QByteArray &hash, const QStringList files);
+	void clear(void);
+
 protected:
-	const QHash<QByteArray, QStringList> m_data;
-	const QList<QByteArray> m_keys;
+	DuplicateItem *m_root;
+
+	QIcon *m_dupIcon;
+	QFont *m_fontDefault;
+	QFont *m_fontBold;
+
+	mutable QReadWriteLock m_lock;
 };

@@ -11,6 +11,7 @@ class QLabel;
 class QMovie;
 class DirectoryScanner;
 class FileComparator;
+class DuplicatesModel;
 
 //MainWindow class
 class MainWindow: public QMainWindow
@@ -38,6 +39,7 @@ protected:
 	QLabel *m_animator;
 	QMovie *m_movie;
 
+	DuplicatesModel *m_model;
 	DirectoryScanner *m_directoryScanner;
 	FileComparator *m_fileComparator;
 

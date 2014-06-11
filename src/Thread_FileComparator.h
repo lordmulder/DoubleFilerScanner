@@ -5,9 +5,11 @@
 #include <QStringList>
 #include <QQueue>
 #include <QHash>
+#include <QReadWriteLock>
 
 class QThreadPool;
 class QEventLoop;
+class DuplicatesModel;
 
 //=======================================================================================
 
@@ -35,10 +37,8 @@ class FileComparator : public QThread
 	Q_OBJECT
 
 public:
-	FileComparator(const QStringList &files);
+	FileComparator(const QStringList &files, DuplicatesModel *model);
 	virtual ~FileComparator(void);
-
-	const QHash<QByteArray, QStringList> &getDuplicates(void) const;
 
 private slots:
 	void fileDone(const QByteArray &hash, const QString &path);
@@ -51,10 +51,10 @@ protected:
 	void scanNextFile(const QString path);
 
 	QThreadPool *m_pool;
+	DuplicatesModel *const m_model;
 
 	QQueue<QString> m_files;
 	QHash<QByteArray, QString> m_hashes;
-	QHash<QByteArray, QStringList> m_duplicates;
 	quint64 m_pendingTasks;
 	
 	int m_totalFileCount;

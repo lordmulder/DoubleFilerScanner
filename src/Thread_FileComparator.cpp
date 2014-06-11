@@ -1,5 +1,7 @@
 #include "Thread_FileComparator.h"
 
+#include "Model_Duplicates.h"
+
 #include <QThreadPool>
 #include <QDir>
 #include <QDirIterator>
@@ -16,7 +18,9 @@ static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 // File Comparator
 //=======================================================================================
 
-FileComparator::FileComparator(const QStringList &files)
+FileComparator::FileComparator(const QStringList &files, DuplicatesModel *model)
+:
+	m_model(model)
 {
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
@@ -40,8 +44,8 @@ void FileComparator::run(void)
 	qDebug("[Analyzing Files]");
 
 	m_hashes.clear();
-	m_duplicates.clear();
 	m_pendingTasks = 0;
+	m_model->clear();
 
 	m_completedFileCount = 0;
 	m_totalFileCount = m_files.count();
@@ -60,6 +64,7 @@ void FileComparator::run(void)
 	}
 
 	qDebug("\n[Searching Duplicates]");
+	quint32 duplicateCount = 0;
 
 	const QList<QByteArray> keys = m_hashes.uniqueKeys();
 	for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
@@ -67,13 +72,14 @@ void FileComparator::run(void)
 		qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
 		if(m_hashes.count(*iter) > 1)
 		{
-			m_duplicates.insert((*iter), m_hashes.values(*iter));
+			m_model->addDuplicate((*iter), m_hashes.values(*iter));
+			duplicateCount++;
 		}
 	}
 	
 	emit progressChanged(100);
 
-	qDebug("Found %d files with duplicates!", m_duplicates.count());
+	qDebug("Found %d files with duplicates!", duplicateCount);
 	qDebug("Thread will exit!\n");
 }
 
@@ -114,17 +120,6 @@ void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 		qDebug("All tasks done!");
 		QTimer::singleShot(0, this, SLOT(quit()));
 	}
-}
-
-const QHash<QByteArray, QStringList> &FileComparator::getDuplicates(void) const
-{
-	if(this->isRunning())
-	{
-		qWarning("Result requested while thread is still running!");
-		return EMPTY_DUPLICATES_LIST;
-	}
-
-	return m_duplicates;
 }
 
 //=======================================================================================

@@ -6,6 +6,7 @@
 #include "Config.h"
 #include "Thread_DirectoryScanner.h"
 #include "Thread_FileComparator.h"
+#include "Model_Duplicates.h"
 
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -43,6 +44,12 @@ MainWindow::MainWindow(void)
 	connect(ui->buttonAbout, SIGNAL(clicked()), this, SLOT(showAbout()));
 	connect(ui->buttonExit,  SIGNAL(clicked()), this, SLOT(close()));
 
+	//Create model
+	m_model = new DuplicatesModel();
+
+	//Setup tree view
+	ui->treeView->header()->hide();
+
 	//Setup animator
 	m_animator = new QLabel(ui->treeView);
 	QPixmap spinner(":/res/Spinner.gif");
@@ -61,6 +68,7 @@ MainWindow::~MainWindow(void)
 	MY_DELETE(m_directoryScanner);
 	MY_DELETE(m_movie);
 	MY_DELETE(m_animator);
+	MY_DELETE(m_model);
 }
 
 //===================================================================
@@ -97,6 +105,10 @@ void MainWindow::startScan(void)
 
 	if(!path.isEmpty())
 	{
+		QItemSelectionModel *selectionModel = ui->treeView->selectionModel();
+		ui->treeView->setModel(NULL);
+		MY_DELETE(selectionModel);
+
 		setButtonsEnabled(false);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
 	
@@ -121,7 +133,7 @@ void MainWindow::directoryScannerFinished(void)
 	ui->progressBar->setValue(0);
 
 	MY_DELETE(m_fileComparator);
-	m_fileComparator = new FileComparator(files);
+	m_fileComparator = new FileComparator(files, m_model);
 	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
 	m_fileComparator->start();
@@ -137,11 +149,16 @@ void MainWindow::fileComparatorFinished(void)
 	assert(m_directoryScanner != NULL);
 	assert(m_fileComparator != NULL);
 
-	const QHash<QByteArray, QStringList> &duplicates = m_fileComparator->getDuplicates();
 	const QStringList &files = m_directoryScanner->getFiles();
-	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(duplicates.count())));
+	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(m_model->duplicateCount())));
+
+	ui->treeView->setModel(m_model);
+
+	MY_DELETE(m_fileComparator);
+	MY_DELETE(m_directoryScanner);
 
 	QApplication::beep();
+	ui->treeView->expandAll();
 	setButtonsEnabled(true);
 }
 

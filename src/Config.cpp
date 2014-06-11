@@ -3,7 +3,7 @@
 //Version info
 const unsigned int DOUBLESCANNER_VERSION_MAJOR = 2;
 const unsigned int DOUBLESCANNER_VERSION_MINOR = 0;
-const unsigned int DOUBLESCANNER_VERSION_PATCH = 1;
+const unsigned int DOUBLESCANNER_VERSION_PATCH = 2;
 
 //Build date/time
 const char* DOUBLESCANNER_BUILD_DATE = __DATE__;
