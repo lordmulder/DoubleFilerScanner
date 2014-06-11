@@ -16,7 +16,19 @@
 
 static void msg_handler(QtMsgType type, const char *msg)
 {
-	fprintf(stderr, "%s\n", msg);
+	switch(type)
+	{
+	case QtWarningMsg:
+		printConsole(msg, 1);
+		break;
+	case QtCriticalMsg:
+	case QtFatalMsg:
+		printConsole(msg, 2);
+		break;
+	default:
+		printConsole(msg, 0);
+		break;
+	}
 }
 
 static QApplication *init_qt(int argc, char* argv[])

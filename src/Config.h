@@ -23,7 +23,7 @@ extern const char* DOUBLESCANNER_ARCH;
 #endif
 
 //Helper macros
-#define DELETE(X) do \
+#define MY_DELETE(X) do \
 { \
 	if((X)) \
 	{ \

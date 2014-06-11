@@ -57,10 +57,10 @@ MainWindow::~MainWindow(void)
 {
 	delete ui;
 
-	DELETE(m_fileComparator);
-	DELETE(m_directoryScanner);
-	DELETE(m_movie);
-	DELETE(m_animator);
+	MY_DELETE(m_fileComparator);
+	MY_DELETE(m_directoryScanner);
+	MY_DELETE(m_movie);
+	MY_DELETE(m_animator);
 }
 
 //===================================================================
@@ -103,7 +103,7 @@ void MainWindow::startScan(void)
 		ui->progressBar->setValue(0);
 		ui->progressBar->setMaximum(0);
 
-		DELETE(m_directoryScanner);
+		MY_DELETE(m_directoryScanner);
 		m_directoryScanner = new DirectoryScanner(path);
 		connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
 		m_directoryScanner->start();
@@ -120,7 +120,7 @@ void MainWindow::directoryScannerFinished(void)
 	ui->progressBar->setMaximum(100);
 	ui->progressBar->setValue(0);
 
-	DELETE(m_fileComparator);
+	MY_DELETE(m_fileComparator);
 	m_fileComparator = new FileComparator(files);
 	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);

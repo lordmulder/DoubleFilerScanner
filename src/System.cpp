@@ -1,5 +1,8 @@
 #include "System.h"
 
+#include "Config.h"
+#include "Resource.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -10,6 +13,12 @@
 #include <fstream>
 
 #pragma intrinsic(_InterlockedExchange)
+
+typedef BOOL (WINAPI *PSetConsoleIcon)(HICON hIcon);
+
+static volatile HANDLE g_hConsole = INVALID_HANDLE_VALUE;
+
+
 
 static void my_invalid_param_handler(const wchar_t* exp, const wchar_t* fun, const wchar_t* fil, unsigned int, uintptr_t)
 {
@@ -47,6 +56,8 @@ void initConsole(void)
 {
 	if(AllocConsole())
 	{
+		g_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 		SetConsoleOutputCP(CP_UTF8);
 		SetConsoleTitleW(L"Double File Scanner");
 		SetConsoleCtrlHandler(NULL, TRUE);
@@ -70,7 +81,49 @@ void initConsole(void)
 			SetWindowLong(hwndConsole, GWL_STYLE, GetWindowLong(hwndConsole, GWL_STYLE) & (~WS_MAXIMIZEBOX) & (~WS_MINIMIZEBOX));
 			SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
 		}
+
+		if(HMODULE kernel32 = GetModuleHandleA("kernel32.dll"))
+		{
+			if(PSetConsoleIcon setConsoleIcon = (PSetConsoleIcon) GetProcAddress(kernel32, "SetConsoleIcon"))
+			{
+				if(HICON hIcon = LoadIcon(GetModuleHandle(0), MAKEINTRESOURCE(IDI_ICON1)))
+				{
+					setConsoleIcon(hIcon);
+				}
+			}
+		}
 	}
+}
+
+void printConsole(const char* text, const int &logLevel)
+{
+	static volatile long consoleLock = 0L;
+
+	static const WORD COLORS[3] =
+	{
+		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+		FOREGROUND_RED | FOREGROUND_INTENSITY,
+	};
+
+	while(_InterlockedExchange(&consoleLock, 1L) != 0L)
+	{
+		Sleep(0);
+	}
+
+	if((g_hConsole != NULL) && (g_hConsole != INVALID_HANDLE_VALUE))
+	{
+		if((logLevel >= 0) && (logLevel <= 2))
+		{
+			SetConsoleTextAttribute(g_hConsole, COLORS[logLevel]);
+		}
+	
+		DWORD written;
+		WriteConsoleA(g_hConsole, text, lstrlenA(text), &written, NULL);
+		WriteConsoleA(g_hConsole, "\r\n", 2, &written, NULL);
+	}
+
+	_InterlockedExchange(&consoleLock, 0L);
 }
 
 void crashHandler(const char *message)
