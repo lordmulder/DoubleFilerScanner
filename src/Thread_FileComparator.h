@@ -42,7 +42,10 @@ public:
 
 private slots:
 	void fileDone(const QByteArray &hash, const QString &path);
-	
+
+signals:
+	void progressChanged(const int &progress);
+
 protected:
 	virtual void run(void);
 	void scanNextFile(const QString path);
@@ -53,4 +56,9 @@ protected:
 	QHash<QByteArray, QString> m_hashes;
 	QHash<QByteArray, QStringList> m_duplicates;
 	quint64 m_pendingTasks;
+	
+	int m_totalFileCount;
+	int m_completedFileCount;
+	int m_progressValue;
+
 };

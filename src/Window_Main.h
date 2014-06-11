@@ -24,6 +24,7 @@ public:
 private slots:
 	void startScan(void);
 	void directoryScannerFinished(void);
+	void fileComparatorProgressChanged(const int &progress);
 	void fileComparatorFinished(void);
 	void showAbout(void);
 

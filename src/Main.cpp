@@ -14,9 +14,13 @@
 #include "System.h"
 #include "Window_Main.h"
 
+static void msg_handler(QtMsgType type, const char *msg)
+{
+	fprintf(stderr, "%s\n", msg);
+}
+
 static QApplication *init_qt(int argc, char* argv[])
 {
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	qDebug("Using Qt v%s-%s [%s], compiled with Qt v%s [%s]\n", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), QT_VERSION_STR, QT_PACKAGEDATE_STR);
 	
 	//Create QApplication
@@ -46,6 +50,9 @@ static QApplication *init_qt(int argc, char* argv[])
 
 static int double_file_scanner(int argc, char* argv[])
 {
+	qInstallMsgHandler(msg_handler);
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
+
 	qDebug("Double File Scanner, Version %u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH);
 	qDebug("Copyright (c) 2004-2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.");
 	qDebug("Built on %s at %s with %s for Win-%s.\n", DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH);

@@ -4,6 +4,10 @@
 #include <Windows.h>
 
 #include <csignal>
+#include <io.h>
+#include <fcntl.h>
+#include <iostream>
+#include <fstream>
 
 #pragma intrinsic(_InterlockedExchange)
 
@@ -41,20 +45,31 @@ void initErrorHandlers()
 
 void initConsole(void)
 {
-	SetConsoleOutputCP(CP_UTF8);
-	SetConsoleTitleW(L"Double File Scanner");
-	SetConsoleCtrlHandler(NULL, TRUE);
-
-	HWND hwndConsole = GetConsoleWindow();
-	if((hwndConsole != NULL) && (hwndConsole != INVALID_HANDLE_VALUE))
+	if(AllocConsole())
 	{
-		HMENU hMenu = GetSystemMenu(hwndConsole, 0);
-		EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
-		RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+		SetConsoleOutputCP(CP_UTF8);
+		SetConsoleTitleW(L"Double File Scanner");
+		SetConsoleCtrlHandler(NULL, TRUE);
 
-		SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
-		SetWindowLong(hwndConsole, GWL_STYLE, GetWindowLong(hwndConsole, GWL_STYLE) & (~WS_MAXIMIZEBOX) & (~WS_MINIMIZEBOX));
-		SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
+		const int flags = _O_WRONLY | _O_U8TEXT;
+		int hCrtStdOut = _open_osfhandle((intptr_t) GetStdHandle(STD_OUTPUT_HANDLE), flags);
+		int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE),  flags);
+		FILE *hfStdOut = (hCrtStdOut >= 0) ? _fdopen(hCrtStdOut, "wb") : NULL;
+		FILE *hfStdErr = (hCrtStdErr >= 0) ? _fdopen(hCrtStdErr, "wb") : NULL;
+		if(hfStdOut) { *stdout = *hfStdOut; std::cout.rdbuf(new std::filebuf(hfStdOut)); }
+		if(hfStdErr) { *stderr = *hfStdErr; std::cerr.rdbuf(new std::filebuf(hfStdErr)); }
+
+		HWND hwndConsole = GetConsoleWindow();
+		if((hwndConsole != NULL) && (hwndConsole != INVALID_HANDLE_VALUE))
+		{
+			HMENU hMenu = GetSystemMenu(hwndConsole, 0);
+			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+			RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+
+			SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
+			SetWindowLong(hwndConsole, GWL_STYLE, GetWindowLong(hwndConsole, GWL_STYLE) & (~WS_MAXIMIZEBOX) & (~WS_MINIMIZEBOX));
+			SetWindowPos(hwndConsole, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_FRAMECHANGED);
+		}
 	}
 }
 

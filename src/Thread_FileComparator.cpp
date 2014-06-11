@@ -21,6 +21,11 @@ FileComparator::FileComparator(const QStringList &files)
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
 	m_files << files;
+	
+	m_completedFileCount = 0;
+	m_totalFileCount = m_files.count();
+	m_progressValue = -1;
+	
 	moveToThread(this);
 }
 
@@ -38,6 +43,10 @@ void FileComparator::run(void)
 	m_duplicates.clear();
 	m_pendingTasks = 0;
 
+	m_completedFileCount = 0;
+	m_totalFileCount = m_files.count();
+	m_progressValue = -1;
+	
 	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
 	{
 		scanNextFile(m_files.dequeue());
@@ -61,6 +70,8 @@ void FileComparator::run(void)
 			m_duplicates.insert((*iter), m_hashes.values(*iter));
 		}
 	}
+	
+	emit progressChanged(100);
 
 	qDebug("Found %d files with duplicates!", m_duplicates.count());
 	qDebug("Thread will exit!\n");
@@ -81,6 +92,14 @@ void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 	if(!(hash.isEmpty() || path.isEmpty()))
 	{
 		m_hashes.insertMulti(hash, path);
+	}
+
+	const int progress = qRound(double(++m_completedFileCount) / double(m_totalFileCount) * 99.0);
+
+	if(progress > m_progressValue)
+	{
+		m_progressValue = progress;
+		emit progressChanged(m_progressValue);
 	}
 
 	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))

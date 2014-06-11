@@ -105,7 +105,7 @@ void MainWindow::startScan(void)
 
 		DELETE(m_directoryScanner);
 		m_directoryScanner = new DirectoryScanner(path);
-		connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()));
+		connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
 		m_directoryScanner->start();
 	}
 }
@@ -115,15 +115,21 @@ void MainWindow::directoryScannerFinished(void)
 	assert(m_directoryScanner != NULL);
 
 	const QStringList &files = m_directoryScanner->getFiles();
-	ui->label->setText(tr("Found %1 file(s). Files are being analyzed now, this might take a few minutes...").arg(QString::number(files.count())));
+	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
 	
 	ui->progressBar->setMaximum(100);
 	ui->progressBar->setValue(0);
 
 	DELETE(m_fileComparator);
 	m_fileComparator = new FileComparator(files);
-	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()));
+	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
+	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
 	m_fileComparator->start();
+}
+
+void MainWindow::fileComparatorProgressChanged(const int &progress)
+{
+	ui->progressBar->setValue(progress);
 }
 
 void MainWindow::fileComparatorFinished(void)
@@ -133,8 +139,9 @@ void MainWindow::fileComparatorFinished(void)
 
 	const QHash<QByteArray, QStringList> &duplicates = m_fileComparator->getDuplicates();
 	const QStringList &files = m_directoryScanner->getFiles();
-	ui->label->setText(tr("Completed: %1 file(s) have been analyzed and %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(duplicates.count())));
+	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(duplicates.count())));
 
+	QApplication::beep();
 	setButtonsEnabled(true);
 }
 

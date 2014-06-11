@@ -13,14 +13,20 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\MOC">
-      <UniqueIdentifier>{bcb9ef9d-13cb-4d08-9d79-5b8bb08c4e48}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\RCC">
-      <UniqueIdentifier>{a77e9f3e-2ca7-4bc8-ae33-f264316ee29f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Dialogs">
       <UniqueIdentifier>{c742c16f-33e0-4762-8ef4-59c3b45e1bb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Third-Party">
+      <UniqueIdentifier>{363b2cf8-3b3e-46f9-8367-9c211503c1f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generated">
+      <UniqueIdentifier>{37daafb0-55f1-4bb0-9a08-6f81e6d3ed76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generated\MOC">
+      <UniqueIdentifier>{bcb9ef9d-13cb-4d08-9d79-5b8bb08c4e48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generated\RCC">
+      <UniqueIdentifier>{a77e9f3e-2ca7-4bc8-ae33-f264316ee29f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -31,7 +37,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tmp\Common\rcc\RCC_DoubleFileScanner.cpp">
-      <Filter>Source Files\RCC</Filter>
+      <Filter>Source Files\Generated\RCC</Filter>
     </ClCompile>
     <ClCompile Include="src\Config.cpp">
       <Filter>Source Files</Filter>
@@ -46,13 +52,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tmp\Common\moc\MOC_Thread_FileComparator.cpp">
-      <Filter>Source Files\MOC</Filter>
+      <Filter>Source Files\Generated\MOC</Filter>
     </ClCompile>
     <ClCompile Include="tmp\Common\moc\MOC_Window_Main.cpp">
-      <Filter>Source Files\MOC</Filter>
+      <Filter>Source Files\Generated\MOC</Filter>
     </ClCompile>
     <ClCompile Include="tmp\Common\moc\MOC_Thread_DirectoryScanner.cpp">
-      <Filter>Source Files\MOC</Filter>
+      <Filter>Source Files\Generated\MOC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\extra\qtmain_win.cpp">
+      <Filter>Source Files\Third-Party</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
