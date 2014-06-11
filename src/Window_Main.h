@@ -12,6 +12,7 @@ class QMovie;
 class DirectoryScanner;
 class FileComparator;
 class DuplicatesModel;
+class QModelIndex;
 
 //MainWindow class
 class MainWindow: public QMainWindow
@@ -27,6 +28,7 @@ private slots:
 	void directoryScannerFinished(void);
 	void fileComparatorProgressChanged(const int &progress);
 	void fileComparatorFinished(void);
+	void itemActivated(const QModelIndex &index);
 	void showAbout(void);
 
 protected:

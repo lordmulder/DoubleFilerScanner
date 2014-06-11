@@ -5,8 +5,11 @@
 #include <QReadWriteLock>
 #include <QFont>
 #include <QIcon>
+#include <QDir>
 
 #include "Config.h"
+
+static const QString EMPTY_STRING;
 
 //===================================================================
 // Duplicates Items
@@ -168,7 +171,7 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 	switch(role)
 	{
 	case Qt::DisplayRole:
-		return item->text();
+		return QDir::toNativeSeparators(item->text());
 	case Qt::FontRole:
 		return item->isFile() ? (*m_fontDflt) : (*m_fontBold);
 	case Qt::DecorationRole:
@@ -204,4 +207,20 @@ unsigned int DuplicatesModel::duplicateCount(void) const
 {
 	QReadLocker readLock(&m_lock);
 	return m_root->childCount();
+}
+
+const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
+{
+	if(index.isValid())
+	{
+		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
+		{
+			if(currentFile->isFile())
+			{
+				return currentFile->text();
+			}
+		}
+	}
+	
+	return EMPTY_STRING;
 }

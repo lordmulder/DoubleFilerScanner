@@ -5,12 +5,14 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <ShellAPI.h>
 
 #include <csignal>
 #include <io.h>
 #include <fcntl.h>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 #pragma intrinsic(_InterlockedExchange)
 
@@ -144,4 +146,23 @@ void crashHandler(const char *message)
 quint32 getCurrentThread(void)
 {
 	return GetCurrentThreadId();
+}
+
+void shellExplore(const wchar_t *path)
+{
+	wchar_t commandLine[512];
+	_snwprintf_s(commandLine, 512, _TRUNCATE, L"explorer.exe /select,\"%s\"", path);
+
+	STARTUPINFOW startupInfo;
+	memset(&startupInfo, 0, sizeof(STARTUPINFOW));
+	startupInfo.cb = sizeof(STARTUPINFOW);
+
+	PROCESS_INFORMATION processInfo;
+	memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
+
+	if(CreateProcessW(NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo))
+	{
+		CloseHandle(processInfo.hProcess);
+		CloseHandle(processInfo.hThread);
+	}
 }

@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMovie>
+#include <QProcess>
 
 #include <cassert>
 
@@ -52,6 +53,7 @@ MainWindow::MainWindow(void)
 
 	//Create model
 	m_model = new DuplicatesModel();
+	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(itemActivated(QModelIndex)));
 
 	//Create directory scanner
 	m_directoryScanner = new DirectoryScanner();
@@ -63,7 +65,8 @@ MainWindow::MainWindow(void)
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
 
 	//Setup tree view
-	ui->treeView->header()->hide();
+	ui->treeView->setExpandsOnDoubleClick(false);
+	ui->treeView->setHeaderHidden(true);
 
 	//Setup animator
 	m_animator = new QLabel(ui->treeView);
@@ -162,6 +165,15 @@ void MainWindow::fileComparatorFinished(void)
 	QApplication::beep();
 	ui->treeView->expandAll();
 	setButtonsEnabled(true);
+}
+
+void MainWindow::itemActivated(const QModelIndex &index)
+{
+	const QString &filePath = m_model->getFilePath(index);
+	if(!filePath.isEmpty())
+	{
+		shellExplore((const wchar_t*)QDir::toNativeSeparators(filePath).utf16());
+	}
 }
 
 void MainWindow::showAbout(void)

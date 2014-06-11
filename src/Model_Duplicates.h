@@ -23,6 +23,7 @@ public:
 	virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
 	unsigned int duplicateCount(void) const;
+	const QString &getFilePath(const QModelIndex &index) const;
 	void addDuplicate(const QByteArray &hash, const QStringList files);
 	void clear(void);
 
