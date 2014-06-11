@@ -37,8 +37,10 @@ class FileComparator : public QThread
 	Q_OBJECT
 
 public:
-	FileComparator(const QStringList &files, DuplicatesModel *model);
+	FileComparator(DuplicatesModel *model);
 	virtual ~FileComparator(void);
+
+	void addFiles(const QStringList &files);
 
 private slots:
 	void fileDone(const QByteArray &hash, const QString &path);

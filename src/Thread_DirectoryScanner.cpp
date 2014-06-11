@@ -15,9 +15,8 @@ static const QStringList EMPTY_STRINGLIST;
 // Directory Scanner
 //=======================================================================================
 
-DirectoryScanner::DirectoryScanner(const QString &directory, const bool recursive)
+DirectoryScanner::DirectoryScanner(const bool recursive)
 :
-	m_directory(directory),
 	m_recusrive(recursive)
 {
 	m_pendingTasks = 0;
@@ -36,10 +35,16 @@ void DirectoryScanner::run(void)
 	qDebug("[Scanning Directory]");
 
 	m_files.clear();
-	m_pendingDirs.clear();
 	m_pendingTasks = 0;
 
-	scanDirectory(m_directory);
+	qDebug("Pending dirs: %d", m_pendingDirs.count());
+
+	while((!m_pendingDirs.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
+	{
+		qDebug("Test");
+		scanDirectory(m_pendingDirs.dequeue());
+	}
+
 	exec();
 
 	if(!m_pendingDirs.empty())
@@ -70,10 +75,11 @@ void DirectoryScanner::directoryDone(const QStringList *files, const QStringList
 	if(m_recusrive)
 	{
 		m_pendingDirs << (*dirs);
-		while((!m_pendingDirs.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
-		{
-			scanDirectory(m_pendingDirs.dequeue());
-		}
+	}
+
+	while((!m_pendingDirs.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
+	{
+		scanDirectory(m_pendingDirs.dequeue());
 	}
 
 	assert(m_pendingTasks > 0);
@@ -83,6 +89,17 @@ void DirectoryScanner::directoryDone(const QStringList *files, const QStringList
 		qDebug("All tasks done!");
 		QTimer::singleShot(0, this, SLOT(quit()));
 	}
+}
+
+void DirectoryScanner::addDirectory(const QString &path)
+{
+	if(this->isRunning())
+	{
+		qWarning("Cannot add input while thread is still running!");
+		return;
+	}
+
+	m_pendingDirs << path;
 }
 
 const QStringList &DirectoryScanner::getFiles(void) const

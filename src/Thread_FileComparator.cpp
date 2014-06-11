@@ -18,14 +18,13 @@ static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 // File Comparator
 //=======================================================================================
 
-FileComparator::FileComparator(const QStringList &files, DuplicatesModel *model)
+FileComparator::FileComparator(DuplicatesModel *model)
 :
 	m_model(model)
 {
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
-	m_files << files;
-	
+
 	m_completedFileCount = 0;
 	m_totalFileCount = m_files.count();
 	m_progressValue = -1;
@@ -120,6 +119,17 @@ void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 		qDebug("All tasks done!");
 		QTimer::singleShot(0, this, SLOT(quit()));
 	}
+}
+
+void FileComparator::addFiles(const QStringList &files)
+{
+	if(this->isRunning())
+	{
+		qWarning("Cannot add input while thread is still running!");
+		return;
+	}
+
+	m_files << files;
 }
 
 //=======================================================================================

@@ -15,6 +15,13 @@
 
 #include <cassert>
 
+static void UNSET_MODEL(QTreeView *view)
+{
+	QItemSelectionModel *selectionModel = view->selectionModel();
+	view->setModel(NULL);
+	MY_DELETE(selectionModel);
+}
+
 //===================================================================
 // Constructor & Destructor
 //===================================================================
@@ -23,10 +30,6 @@ MainWindow::MainWindow(void)
 :
 	ui(new Ui::MainWindow())
 {
-	//Initialize
-	m_directoryScanner = NULL;
-	m_fileComparator = NULL;
-	
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
 
@@ -46,6 +49,15 @@ MainWindow::MainWindow(void)
 
 	//Create model
 	m_model = new DuplicatesModel();
+
+	//Create directory scanner
+	m_directoryScanner = new DirectoryScanner();
+	connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
+
+	//Create file comparator
+	m_fileComparator = new FileComparator(m_model);
+	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
+	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
 
 	//Setup tree view
 	ui->treeView->header()->hide();
@@ -105,9 +117,7 @@ void MainWindow::startScan(void)
 
 	if(!path.isEmpty())
 	{
-		QItemSelectionModel *selectionModel = ui->treeView->selectionModel();
-		ui->treeView->setModel(NULL);
-		MY_DELETE(selectionModel);
+		UNSET_MODEL(ui->treeView);
 
 		setButtonsEnabled(false);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
@@ -115,27 +125,20 @@ void MainWindow::startScan(void)
 		ui->progressBar->setValue(0);
 		ui->progressBar->setMaximum(0);
 
-		MY_DELETE(m_directoryScanner);
-		m_directoryScanner = new DirectoryScanner(path);
-		connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
+		m_directoryScanner->addDirectory(path);
 		m_directoryScanner->start();
 	}
 }
 
 void MainWindow::directoryScannerFinished(void)
 {
-	assert(m_directoryScanner != NULL);
-
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
 	
 	ui->progressBar->setMaximum(100);
 	ui->progressBar->setValue(0);
 
-	MY_DELETE(m_fileComparator);
-	m_fileComparator = new FileComparator(files, m_model);
-	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
-	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
+	m_fileComparator->addFiles(files);
 	m_fileComparator->start();
 }
 
@@ -146,16 +149,10 @@ void MainWindow::fileComparatorProgressChanged(const int &progress)
 
 void MainWindow::fileComparatorFinished(void)
 {
-	assert(m_directoryScanner != NULL);
-	assert(m_fileComparator != NULL);
-
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(m_model->duplicateCount())));
 
 	ui->treeView->setModel(m_model);
-
-	MY_DELETE(m_fileComparator);
-	MY_DELETE(m_directoryScanner);
 
 	QApplication::beep();
 	ui->treeView->expandAll();
