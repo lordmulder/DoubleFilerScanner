@@ -1,4 +1,4 @@
-#include "FileComparator.h"
+#include "Thread_FileComparator.h"
 
 #include <QThreadPool>
 #include <QDir>

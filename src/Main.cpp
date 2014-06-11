@@ -12,7 +12,7 @@
 
 #include "Config.h"
 #include "System.h"
-#include "MainWindow.h"
+#include "Window_Main.h"
 
 static QApplication *init_qt(int argc, char* argv[])
 {

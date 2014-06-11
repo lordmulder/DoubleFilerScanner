@@ -1,4 +1,4 @@
-#include "DirectoryScanner.h"
+#include "Thread_DirectoryScanner.h"
 
 #include <QThreadPool>
 #include <QDir>

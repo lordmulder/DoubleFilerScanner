@@ -21,3 +21,14 @@ extern const char* DOUBLESCANNER_ARCH;
 #else
 	#error Inconsistent debug defines detected!
 #endif
+
+//Helper macros
+#define DELETE(X) do \
+{ \
+	if((X)) \
+	{ \
+		delete (X); \
+		(X) = NULL; \
+	} \
+} \
+while(0)

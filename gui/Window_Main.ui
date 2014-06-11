@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>431</width>
-    <height>294</height>
+    <width>512</width>
+    <height>360</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,32 +22,42 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
-       <number>4</number>
+       <number>6</number>
       </property>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Operation not started yet. Please click &quot;Start Scan&quot; in order to begin!</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QProgressBar" name="progressBar">
+           <property name="value">
+            <number>0</number>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="textVisible">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
       <item>
        <widget class="QTreeView" name="treeView"/>
       </item>
       <item>
-       <widget class="QLabel" name="label">
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="text">
-         <string>Operation not started yet. Please click &quot;Start Scan&quot; in order to begin!</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QFrame" name="frame">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>12</height>
-         </size>
-        </property>
         <property name="frameShape">
          <enum>QFrame::HLine</enum>
         </property>
@@ -59,7 +69,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QPushButton" name="buttonStartScan">
+         <widget class="QPushButton" name="buttonStart">
           <property name="minimumSize">
            <size>
             <width>120</width>

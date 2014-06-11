@@ -27,18 +27,6 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DirectoryScanner.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tmp\Common\moc\MOC_DirectoryScanner.cpp">
-      <Filter>Source Files\MOC</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FileComparator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tmp\Common\moc\MOC_FileComparator.cpp">
-      <Filter>Source Files\MOC</Filter>
-    </ClCompile>
     <ClCompile Include="src\System.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,10 +36,22 @@
     <ClCompile Include="src\Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\MainWindow.cpp">
+    <ClCompile Include="src\Window_Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tmp\Common\moc\MOC_MainWindow.cpp">
+    <ClCompile Include="src\Thread_DirectoryScanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Thread_FileComparator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\Common\moc\MOC_Thread_FileComparator.cpp">
+      <Filter>Source Files\MOC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\Common\moc\MOC_Window_Main.cpp">
+      <Filter>Source Files\MOC</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\Common\moc\MOC_Thread_DirectoryScanner.cpp">
       <Filter>Source Files\MOC</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,16 +70,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="src\DirectoryScanner.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\FileComparator.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="DoubleFileScanner.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="gui\MainWindow.ui">
+    <CustomBuild Include="src\Thread_DirectoryScanner.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\Thread_FileComparator.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="gui\Window_Main.ui">
       <Filter>Dialogs</Filter>
     </CustomBuild>
   </ItemGroup>
