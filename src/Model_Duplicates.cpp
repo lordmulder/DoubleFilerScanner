@@ -79,9 +79,13 @@ void DuplicateItem::dump(int depth = 0)
 
 DuplicatesModel::DuplicatesModel(void)
 {
-	m_dupIcon = new QIcon(":/res/Duplicate.png");
-	m_fontBold = new QFont();
-	m_fontDefault = new QFont();
+	m_bulIcon = new QIcon(":/res/Icon_Bullet.png");
+	m_dupIcon = new QIcon(":/res/Icon_Duplicate.png");
+
+	m_fontDflt = new QFont("Monospace");
+	m_fontDflt->setStyleHint(QFont::TypeWriter);
+	m_fontBold = new QFont("Monospace");
+	m_fontBold->setStyleHint(QFont::TypeWriter);
 	m_fontBold->setBold(true);
 
 	m_root = new DuplicateItem(NULL, "ROOT BLOODY ROOT");
@@ -90,8 +94,10 @@ DuplicatesModel::DuplicatesModel(void)
 DuplicatesModel::~DuplicatesModel(void)
 {
 	MY_DELETE(m_root);
-	MY_DELETE(m_fontDefault);
+	MY_DELETE(m_fontDflt);
 	MY_DELETE(m_fontBold);
+	MY_DELETE(m_bulIcon);
+	MY_DELETE(m_dupIcon);
 }
 
 QModelIndex DuplicatesModel::index(int row, int column, const QModelIndex &parent) const
@@ -164,9 +170,9 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 	case Qt::DisplayRole:
 		return item->text();
 	case Qt::FontRole:
-		return item->isFile() ? (*m_fontDefault) : (*m_fontBold);
+		return item->isFile() ? (*m_fontDflt) : (*m_fontBold);
 	case Qt::DecorationRole:
-		return item->isFile() ? QVariant() : (*m_dupIcon);
+		return item->isFile() ? (*m_bulIcon) : (*m_dupIcon);
 	}
 
 	return QVariant();

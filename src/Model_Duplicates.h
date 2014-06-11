@@ -30,7 +30,8 @@ protected:
 	DuplicateItem *m_root;
 
 	QIcon *m_dupIcon;
-	QFont *m_fontDefault;
+	QIcon *m_bulIcon;
+	QFont *m_fontDflt;
 	QFont *m_fontBold;
 
 	mutable QReadWriteLock m_lock;

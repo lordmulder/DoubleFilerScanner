@@ -5,7 +5,8 @@
     <file>res/Button_Exit.png</file>
     <file>res/Button_Start.png</file>
     <file>res/DoubleFileScanner.png</file>
-    <file>res/Duplicate.png</file>
+    <file>res/Icon_Bullet.png</file>
+    <file>res/Icon_Duplicate.png</file>
     <file>res/Logo.png</file>
     <file>res/Spinner.gif</file>
   </qresource>
