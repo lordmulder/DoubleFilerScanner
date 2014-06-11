@@ -18,7 +18,7 @@ class FileComparatorTask : public QObject, public QRunnable
 	Q_OBJECT
 
 public:
-	FileComparatorTask(const QString &filePath);
+	FileComparatorTask(const QString &filePath, volatile bool *abortFlag);
 	virtual ~FileComparatorTask(void);
 
 signals:
@@ -28,6 +28,7 @@ protected:
 	virtual void run(void);
 	
 	const QString m_filePath;
+	volatile bool* const m_abortFlag;
 };
 
 //=======================================================================================
@@ -37,7 +38,7 @@ class FileComparator : public QThread
 	Q_OBJECT
 
 public:
-	FileComparator(DuplicatesModel *model);
+	FileComparator(DuplicatesModel *model, volatile bool *abortFlag);
 	virtual ~FileComparator(void);
 
 	void addFiles(const QStringList &files);
@@ -63,4 +64,5 @@ protected:
 	int m_completedFileCount;
 	int m_progressValue;
 
+	volatile bool *const m_abortFlag;
 };

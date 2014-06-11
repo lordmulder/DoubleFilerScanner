@@ -18,8 +18,9 @@ static const QStringList EMPTY_STRINGLIST;
 // Directory Scanner
 //=======================================================================================
 
-DirectoryScanner::DirectoryScanner(const bool recursive)
+DirectoryScanner::DirectoryScanner(volatile bool *abortFlag, const bool recursive)
 :
+	m_abortFlag(abortFlag),
 	m_recusrive(recursive)
 {
 	m_pendingTasks = 0;
@@ -53,6 +54,7 @@ void DirectoryScanner::run(void)
 	if(!m_pendingDirs.empty())
 	{
 		qWarning("Thread is about to exit while there still are pending directories!");
+		m_pendingDirs.clear();
 	}
 
 	qDebug("Found %d files!", m_files.count());
@@ -63,7 +65,7 @@ void DirectoryScanner::run(void)
 
 void DirectoryScanner::scanDirectory(const QString path)
 {
-	DirectoryScannerTask *task = new DirectoryScannerTask(path);
+	DirectoryScannerTask *task = new DirectoryScannerTask(path, m_abortFlag);
 	if(connect(task, SIGNAL(directoryAnalyzed(const QStringList*, const QStringList*)), this, SLOT(directoryDone(const QStringList*, const QStringList*)), Qt::BlockingQueuedConnection))
 	{
 		m_pendingTasks++;
@@ -80,7 +82,7 @@ void DirectoryScanner::directoryDone(const QStringList *files, const QStringList
 		m_pendingDirs << (*dirs);
 	}
 
-	while((!m_pendingDirs.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
+	while((!m_pendingDirs.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS) && (!(*m_abortFlag)))
 	{
 		scanDirectory(m_pendingDirs.dequeue());
 	}
@@ -120,9 +122,10 @@ const QStringList &DirectoryScanner::getFiles(void) const
 // Directory Scanner Task
 //=======================================================================================
 
-DirectoryScannerTask::DirectoryScannerTask(const QString &directory)
+DirectoryScannerTask::DirectoryScannerTask(const QString &directory, volatile bool *abortFlag)
 :
-	m_directory(directory)
+	m_directory(directory),
+	m_abortFlag(abortFlag)
 {
 }
 
@@ -133,12 +136,18 @@ DirectoryScannerTask::~DirectoryScannerTask(void)
 
 void DirectoryScannerTask::run(void)
 {
-	qDebug("%s", m_directory.toUtf8().constData());
-
 	QStringList files, dirs;
+
+	if(*m_abortFlag)
+	{
+		emit directoryAnalyzed(&files, &dirs);
+		return;
+	}
+
+	qDebug("%s", m_directory.toUtf8().constData());
 	QDirIterator iter(m_directory);
 
-	while(iter.hasNext())
+	while(iter.hasNext() && (!(*m_abortFlag)))
 	{
 		const QString path = iter.next();
 		const QString name = iter.fileName();

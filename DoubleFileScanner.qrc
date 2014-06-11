@@ -8,6 +8,9 @@
     <file>res/Icon_Bullet.png</file>
     <file>res/Icon_Duplicate.png</file>
     <file>res/Logo.png</file>
+    <file>res/Sign_Accept.png</file>
+    <file>res/Sign_Cancel.png</file>
+    <file>res/Sign_Clocks.png</file>
     <file>res/Spinner.gif</file>
   </qresource>
 </RCC>

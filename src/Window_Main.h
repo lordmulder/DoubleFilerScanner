@@ -35,11 +35,20 @@ protected:
 	virtual void closeEvent(QCloseEvent *e);
 	virtual void resizeEvent(QResizeEvent *e);
 	virtual void showEvent(QShowEvent *e);
+	virtual void keyPressEvent(QKeyEvent *e);
 
+	void centerWidget(QWidget *widget);
+	QLabel *makeLabel(QWidget *parent, const QString &fileName, const bool &hidden = true);
 	void setButtonsEnabled(const bool &enabled);
 
 	QLabel *m_animator;
 	QMovie *m_movie;
+
+	QLabel *m_signCompleted;
+	QLabel *m_signCancelled;
+	QLabel *m_signQuiescent;
+
+	volatile bool m_abortFlag;
 
 	DuplicatesModel *m_model;
 	DirectoryScanner *m_directoryScanner;

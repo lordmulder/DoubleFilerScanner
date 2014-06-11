@@ -20,9 +20,10 @@ static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 // File Comparator
 //=======================================================================================
 
-FileComparator::FileComparator(DuplicatesModel *model)
+FileComparator::FileComparator(DuplicatesModel *model, volatile bool *abortFlag)
 :
-	m_model(model)
+	m_model(model),
+	m_abortFlag(abortFlag)
 {
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
@@ -61,31 +62,35 @@ void FileComparator::run(void)
 	if(!m_files.empty())
 	{
 		qWarning("Thread is about to exit while there still are pending directories!");
+		m_files.clear();
 	}
 
-	qDebug("\n[Searching Duplicates]");
-	quint32 duplicateCount = 0;
-
-	const QList<QByteArray> keys = m_hashes.uniqueKeys();
-	for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
+	if(!(*m_abortFlag))
 	{
-		qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
-		if(m_hashes.count(*iter) > 1)
-		{
-			m_model->addDuplicate((*iter), m_hashes.values(*iter));
-			duplicateCount++;
-		}
-	}
-	
-	emit progressChanged(100);
+		qDebug("\n[Searching Duplicates]");
+		quint32 duplicateCount = 0;
 
-	qDebug("Found %d files with duplicates!", duplicateCount);
+		const QList<QByteArray> keys = m_hashes.uniqueKeys();
+		for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
+		{
+			qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
+			if(m_hashes.count(*iter) > 1)
+			{
+				m_model->addDuplicate((*iter), m_hashes.values(*iter));
+				duplicateCount++;
+			}
+		}
+	
+		qDebug("Found %d files with duplicates!", duplicateCount);
+		emit progressChanged(100);
+	}
+
 	qDebug("Thread will exit!\n");
 }
 
 void FileComparator::scanNextFile(const QString path)
 {
-	FileComparatorTask *task = new FileComparatorTask(path);
+	FileComparatorTask *task = new FileComparatorTask(path, m_abortFlag);
 	if(connect(task, SIGNAL(fileAnalyzed(const QByteArray&, const QString&)), this, SLOT(fileDone(const QByteArray&, const QString&)), Qt::BlockingQueuedConnection))
 	{
 		m_pendingTasks++;
@@ -102,13 +107,13 @@ void FileComparator::fileDone(const QByteArray &hash, const QString &path)
 
 	const int progress = qRound(double(++m_completedFileCount) / double(m_totalFileCount) * 99.0);
 
-	if(progress > m_progressValue)
+	if((progress > m_progressValue) && (!(*m_abortFlag)))
 	{
 		m_progressValue = progress;
 		emit progressChanged(m_progressValue);
 	}
 
-	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
+	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS) && (!(*m_abortFlag)))
 	{
 		scanNextFile(m_files.dequeue());
 	}
@@ -137,9 +142,10 @@ void FileComparator::addFiles(const QStringList &files)
 // File Comparator Task
 //=======================================================================================
 
-FileComparatorTask::FileComparatorTask(const QString &filePath)
+FileComparatorTask::FileComparatorTask(const QString &filePath, volatile bool *abortFlag)
 :
-	m_filePath(filePath)
+	m_filePath(filePath),
+	m_abortFlag(abortFlag)
 {
 }
 
@@ -150,6 +156,11 @@ FileComparatorTask::~FileComparatorTask(void)
 
 void FileComparatorTask::run(void)
 {
+	if(*m_abortFlag)
+	{
+		emit fileAnalyzed(QByteArray(), QString());
+	}
+	
 	qDebug("%s", m_filePath.toUtf8().constData());
 
 	QFile file(m_filePath);
@@ -158,7 +169,7 @@ void FileComparatorTask::run(void)
 	{
 		QCryptographicHash hash(QCryptographicHash::Sha1);
 
-		while(!(file.atEnd() || (file.error() != QFile::NoError)))
+		while(!(file.atEnd() || (file.error() != QFile::NoError) || (*m_abortFlag)))
 		{
 			const QByteArray buffer = file.read(1048576);
 			if(buffer.size() > 0)
@@ -168,11 +179,18 @@ void FileComparatorTask::run(void)
 		}
 
 		file.close();
-		emit fileAnalyzed(hash.result(), m_filePath);
+
+		if(!(*m_abortFlag))
+		{
+			emit fileAnalyzed(hash.result(), m_filePath);
+			return;
+		}
 	}
-	else
+
+	if(!(*m_abortFlag))
 	{
 		qWarning("Failed to open: %s", m_filePath.toUtf8().constData());
-		emit fileAnalyzed(QByteArray(), QString());
 	}
+
+	emit fileAnalyzed(QByteArray(), QString());
 }

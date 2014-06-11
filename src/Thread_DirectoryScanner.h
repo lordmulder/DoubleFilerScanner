@@ -15,7 +15,7 @@ class DirectoryScannerTask : public QObject, public QRunnable
 	Q_OBJECT
 
 public:
-	DirectoryScannerTask(const QString &directory);
+	DirectoryScannerTask(const QString &directory, volatile bool *abortFlag);
 	virtual ~DirectoryScannerTask(void);
 
 signals:
@@ -25,6 +25,7 @@ protected:
 	virtual void run(void);
 	
 	const QString m_directory;
+	volatile bool *const m_abortFlag;
 };
 
 //=======================================================================================
@@ -34,7 +35,7 @@ class DirectoryScanner : public QThread
 	Q_OBJECT
 
 public:
-	DirectoryScanner(const bool recursive = true);
+	DirectoryScanner(volatile bool *abortFlag, const bool recursive = true);
 	virtual ~DirectoryScanner(void);
 
 	void addDirectory(const QString &path);
@@ -53,4 +54,6 @@ protected:
 	QQueue<QString> m_pendingDirs;
 	QStringList m_files;
 	quint64 m_pendingTasks;
+
+	volatile bool *const m_abortFlag;
 };

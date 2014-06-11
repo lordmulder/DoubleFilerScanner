@@ -32,7 +32,7 @@ MainWindow::MainWindow(void)
 :
 	ui(new Ui::MainWindow())
 {
-	//qWarning("MainWindow::MainWindow: Current thread id = %u", getCurrentThread());
+	m_abortFlag = false;
 
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
@@ -56,11 +56,11 @@ MainWindow::MainWindow(void)
 	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(itemActivated(QModelIndex)));
 
 	//Create directory scanner
-	m_directoryScanner = new DirectoryScanner();
+	m_directoryScanner = new DirectoryScanner(&m_abortFlag);
 	connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
 
 	//Create file comparator
-	m_fileComparator = new FileComparator(m_model);
+	m_fileComparator = new FileComparator(m_model, &m_abortFlag);
 	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
 
@@ -69,13 +69,14 @@ MainWindow::MainWindow(void)
 	ui->treeView->setHeaderHidden(true);
 
 	//Setup animator
-	m_animator = new QLabel(ui->treeView);
-	QPixmap spinner(":/res/Spinner.gif");
-	m_animator->setFixedSize(spinner.size());
-	m_animator->setPixmap(spinner);
 	m_movie = new QMovie(":/res/Spinner.gif");
-	m_animator->hide();
+	m_animator = makeLabel(ui->treeView, ":/res/Spinner.gif");
 	m_animator->setMovie(m_movie);
+
+	//Create signs
+	m_signQuiescent = makeLabel(ui->treeView, ":/res/Sign_Clocks.png", 0);
+	m_signCompleted = makeLabel(ui->treeView, ":/res/Sign_Accept.png", 1);
+	m_signCancelled = makeLabel(ui->treeView, ":/res/Sign_Cancel.png", 1);
 }
 
 MainWindow::~MainWindow(void)
@@ -87,6 +88,9 @@ MainWindow::~MainWindow(void)
 	MY_DELETE(m_movie);
 	MY_DELETE(m_animator);
 	MY_DELETE(m_model);
+	MY_DELETE(m_signCompleted);
+	MY_DELETE(m_signCancelled);
+	MY_DELETE(m_signQuiescent);
 }
 
 //===================================================================
@@ -100,9 +104,10 @@ void MainWindow::showEvent(QShowEvent *e)
 
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
-	const int x = (ui->treeView->viewport()->width()  - m_animator->width())  / 2;
-	const int y = (ui->treeView->viewport()->height() - m_animator->height()) / 2;
-	m_animator->move(x, y);
+	centerWidget(m_animator);
+	centerWidget(m_signCompleted);
+	centerWidget(m_signCancelled);
+	centerWidget(m_signQuiescent);
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)
@@ -111,6 +116,21 @@ void MainWindow::closeEvent(QCloseEvent *e)
 	{
 		e->ignore();
 	}
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+	if(e->key() == Qt::Key_Escape)
+	{
+		if(!m_abortFlag)
+		{
+			qWarning("Operation has been aborted by user!");
+			ui->label->setText(tr("Abortion has been request, terminating operation..."));
+			m_abortFlag = true;
+		}
+	}
+
+	QMainWindow::keyPressEvent(e);
 }
 
 //===================================================================
@@ -123,12 +143,16 @@ void MainWindow::startScan(void)
 
 	if(!path.isEmpty())
 	{
-		//qWarning("MainWindow::startScan: Current thread id = %u", getCurrentThread());
-
-		UNSET_MODEL(ui->treeView);
 		setButtonsEnabled(false);
+		m_abortFlag = false;
+		UNSET_MODEL(ui->treeView);
+
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
 	
+		m_signCompleted->hide();
+		m_signCancelled->hide();
+		m_signQuiescent->hide();
+
 		ui->progressBar->setValue(0);
 		ui->progressBar->setMaximum(0);
 
@@ -139,32 +163,59 @@ void MainWindow::startScan(void)
 
 void MainWindow::directoryScannerFinished(void)
 {
-	const QStringList &files = m_directoryScanner->getFiles();
-	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
-	
 	ui->progressBar->setMaximum(100);
 	ui->progressBar->setValue(0);
+
+	if(m_abortFlag)
+	{
+		QApplication::beep();
+		ui->label->setText(tr("The operation has been aborted by the user!"));
+		m_signCancelled->show();
+		setButtonsEnabled(true);
+		return;
+	}
+	
+	const QStringList &files = m_directoryScanner->getFiles();
+	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
 
 	m_fileComparator->addFiles(files);
 	m_fileComparator->start();
 }
 
-void MainWindow::fileComparatorProgressChanged(const int &progress)
-{
-	ui->progressBar->setValue(progress);
-}
-
 void MainWindow::fileComparatorFinished(void)
 {
+	if(m_abortFlag)
+	{
+		QApplication::beep();
+		ui->label->setText(tr("The operation has been aborted by the user!"));
+		m_signCancelled->show();
+		setButtonsEnabled(true);
+		return;
+	}
+
+	m_abortFlag = true; /*to prevent an abort message after completion*/
+
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(m_model->duplicateCount())));
 
-	UNSET_MODEL(ui->treeView);
-	ui->treeView->setModel(m_model);
+	if(m_model->duplicateCount() > 0)
+	{
+		UNSET_MODEL(ui->treeView);
+		ui->treeView->setModel(m_model);
+	}
+	else
+	{
+		m_signCompleted->show();
+	}
 
 	QApplication::beep();
 	ui->treeView->expandAll();
 	setButtonsEnabled(true);
+}
+
+void MainWindow::fileComparatorProgressChanged(const int &progress)
+{
+	ui->progressBar->setValue(progress);
 }
 
 void MainWindow::itemActivated(const QModelIndex &index)
@@ -204,8 +255,47 @@ void MainWindow::setButtonsEnabled(const bool &enabled)
 		m_animator->hide();
 	
 		ui->progressBar->setMaximum(100);
-		ui->progressBar->setValue(100);
 
 		QApplication::restoreOverrideCursor();
 	}
+}
+
+void MainWindow::centerWidget(QWidget *widget)
+{
+	if(QAbstractScrollArea *parent = dynamic_cast<QAbstractScrollArea*>(widget->parent()))
+	{
+		const int x = parent->viewport()->width()  - widget->width();
+		const int y = parent->viewport()->height() - widget->height();
+		widget->move(x/2, y/2);
+	}
+	else if(QWidget *parent = dynamic_cast<QWidget*>(widget->parent()))
+	{
+		const int x = parent->width()  - widget->width();
+		const int y = parent->height() - widget->height();
+		widget->move(x/2, y/2);
+	}
+}
+
+QLabel *MainWindow::makeLabel(QWidget *parent, const QString &fileName, const bool &hidden)
+{
+	QLabel *label = new QLabel(parent);
+	QPixmap pixmap(fileName);
+
+	if(!pixmap.isNull())
+	{
+		label->setPixmap(pixmap);
+		label->setPixmap(pixmap);
+		label->setFixedSize(pixmap.width(), pixmap.height());
+	}
+	else
+	{
+		qWarning("Failed to load pixmap: %s", fileName.toLatin1().constData());
+	}
+
+	if(hidden)
+	{
+		label->hide();
+	}
+
+	return label;
 }
