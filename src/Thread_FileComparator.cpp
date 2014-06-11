@@ -52,6 +52,13 @@ void FileComparator::run(void)
 	m_totalFileCount = m_files.count();
 	m_progressValue = -1;
 	
+	if(m_files.count() < 1)
+	{
+		qWarning("File list is empty -> Nothing to do!");
+		emit progressChanged(100);
+		return;
+	}
+
 	while((!m_files.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
 	{
 		scanNextFile(m_files.dequeue());
