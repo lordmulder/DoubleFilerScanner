@@ -130,6 +130,8 @@ void initConsole(void)
 			}
 		}
 	}
+
+	_InterlockedExchange(&g_consoleLock, 0L);
 }
 
 void printConsole(const char* text, const int &logLevel)

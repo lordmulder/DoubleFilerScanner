@@ -32,6 +32,7 @@
 
 #include "Config.h"
 #include "System.h"
+#include "Taskbar.h"
 #include "Window_Main.h"
 
 //Initialize static Qt plugins
@@ -106,6 +107,9 @@ static int double_file_scanner(int argc, char* argv[])
 	//Create application
 	QApplication *application = init_qt(argc, argv);
 
+	//Initialize taskbar
+	Taskbar::init();
+
 	//Create main window
 	MainWindow *mainWindow = new MainWindow();
 	mainWindow->show();
@@ -116,6 +120,9 @@ static int double_file_scanner(int argc, char* argv[])
 	//Free memory
 	delete mainWindow;
 	delete application;
+
+	//Uninitialize taskbar
+	Taskbar::uninit();
 
 	return EXIT_SUCCESS;
 }

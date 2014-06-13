@@ -20,17 +20,41 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef DBLSCAN_VERSION
-#undef DBLSCAN_VERSION
+#pragma once
 
-#define DBLSCAN_VER_MAJOR     2
-#define DBLSCAN_VER_MINOR_HI  0
-#define DBLSCAN_VER_MAJOR_LO  0
-#define DBLSCAN_VER_PATCH     5
+#include <QMutex>
 
-#define DBLSCAN_VER_STRING_HLP1(X)        #X
-#define DBLSCAN_VER_STRING_HLP2(W,X,Y,Z)  DBLSCAN_VER_STRING_HLP1(v##W.X##Y-Z)
-#define DBLSCAN_VER_STRING_HLP3(W,X,Y,Z)  DBLSCAN_VER_STRING_HLP2(W,X,Y,Z)
-#define DBLSCAN_VER_STRING                DBLSCAN_VER_STRING_HLP3(DBLSCAN_VER_MAJOR,DBLSCAN_VER_MINOR_HI,DBLSCAN_VER_MAJOR_LO,DBLSCAN_VER_PATCH)
+class QWidget;
+class QIcon;
+class TaskbarData;
 
-#endif //DBLSCAN_VERSION
+class Taskbar
+{
+public:
+	Taskbar(void);
+	~Taskbar(void);
+
+	//Taskbar states
+	enum TaskbarState
+	{
+		TaskbarNoState = 0,
+		TaskbarNormalState = 1,
+		TaskbarIndeterminateState = 2,
+		TaskbarPausedState = 3,
+		TaskbarErrorState = 4
+	};
+	
+	//Public interface
+	static bool handleWinEvent(void *message, long *result);
+	static bool setTaskbarState(QWidget *window, TaskbarState state);
+	static void setTaskbarProgress(QWidget *window, unsigned __int64 currentValue, unsigned __int64 maximumValue);
+	static void setOverlayIcon(QWidget *window, QIcon *icon);
+
+	static void init(void);
+	static void uninit(void);
+
+private:
+	static void createInterface(void);
+	static QMutex s_lock;
+	static TaskbarData *s_data;
+};

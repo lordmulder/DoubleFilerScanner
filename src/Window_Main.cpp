@@ -29,6 +29,7 @@
 #include "Thread_FileComparator.h"
 #include "Model_Duplicates.h"
 #include "Window_Directories.h"
+#include "Taskbar.h"
 
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -189,6 +190,11 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	QMainWindow::keyPressEvent(e);
 }
 
+bool MainWindow::winEvent(MSG *message, long *result)
+{
+	return Taskbar::handleWinEvent(message, result);
+}
+
 //===================================================================
 // Slots
 //===================================================================
@@ -219,6 +225,8 @@ void MainWindow::startScan(void)
 		ui->progressBar->setValue(0);
 		ui->progressBar->setMaximum(0);
 
+		Taskbar::setTaskbarState(this, Taskbar::TaskbarIndeterminateState);
+
 		m_directoryScanner->setRecursive(recursive);
 		m_directoryScanner->addDirectories(directories);
 		m_directoryScanner->start();
@@ -240,9 +248,13 @@ void MainWindow::directoryScannerFinished(void)
 		setButtonsEnabled(true);
 		ENABLE_MENU(ui->menuFile, true);
 		ENABLE_MENU(ui->menuHelp, true);
+		Taskbar::setTaskbarState(this, Taskbar::TaskbarErrorState);
 		return;
 	}
 	
+	Taskbar::setTaskbarState(this, Taskbar::TaskbarNormalState);
+	Taskbar::setTaskbarProgress(this, 0, 100);
+
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
 
@@ -260,6 +272,7 @@ void MainWindow::fileComparatorFinished(void)
 		setButtonsEnabled(true);
 		ENABLE_MENU(ui->menuFile, true);
 		ENABLE_MENU(ui->menuHelp, true);
+		Taskbar::setTaskbarState(this, Taskbar::TaskbarErrorState);
 		return;
 	}
 
@@ -290,6 +303,7 @@ void MainWindow::fileComparatorFinished(void)
 void MainWindow::fileComparatorProgressChanged(const int &progress)
 {
 	ui->progressBar->setValue(progress);
+	Taskbar::setTaskbarProgress(this, progress, 100);
 }
 
 void MainWindow::itemActivated(const QModelIndex &index)
@@ -311,6 +325,8 @@ void MainWindow::clearData(void)
 
 		ui->progressBar->setMaximum(100);
 		ui->progressBar->setValue(0);
+
+		Taskbar::setTaskbarState(this, Taskbar::TaskbarNoState);
 
 		m_signCompleted->hide();
 		m_signCancelled->hide();

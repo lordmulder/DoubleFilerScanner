@@ -62,6 +62,7 @@ protected:
 	virtual void resizeEvent(QResizeEvent *e);
 	virtual void showEvent(QShowEvent *e);
 	virtual void keyPressEvent(QKeyEvent *e);
+	virtual bool winEvent(MSG *message, long *result);
 
 	void centerWidget(QWidget *widget);
 	QLabel *makeLabel(QWidget *parent, const QString &fileName, const bool &hidden = true);

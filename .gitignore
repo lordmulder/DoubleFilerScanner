@@ -2,9 +2,9 @@
 *.sdf
 *.suo
 *.user
-*/tmp/*
-/__old__
+*.local.*
 /bin
 /ipch
 /doc
 /tmp
+/out
