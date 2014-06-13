@@ -49,8 +49,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\Version.h" />
     <CustomBuild Include="src\Window_Main.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
@@ -67,10 +67,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
+    <ClInclude Include="src\Resource.h" />
     <ClInclude Include="src\System.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DoubleFileScanner.rc" />
+    <ResourceCompile Include="DoubleFileScanner.rcx" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DoubleFileScanner.qrc">

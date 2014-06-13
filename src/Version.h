@@ -20,13 +20,17 @@
 // http://www.gnu.org/licenses/gpl-2.0.txt
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifdef DBLSCAN_VERSION
+#undef DBLSCAN_VERSION
 
-#include <QString>
+#define DBLSCAN_VER_MAJOR     2
+#define DBLSCAN_VER_MINOR_HI  0
+#define DBLSCAN_VER_MAJOR_LO  0
+#define DBLSCAN_VER_PATCH     3
 
-void crashHandler(const char *message);
-void initConsole(void);
-void initErrorHandlers(void);
-void printConsole(const char* text, const int &logLevel);
-quint32 getCurrentThread(void);
-void shellExplore(const wchar_t *path);
+#define DBLSCAN_VER_STRING_HLP1(X)        #X
+#define DBLSCAN_VER_STRING_HLP2(W,X,Y,Z)  DBLSCAN_VER_STRING_HLP1(v##W.X##Y-Z)
+#define DBLSCAN_VER_STRING_HLP3(W,X,Y,Z)  DBLSCAN_VER_STRING_HLP2(W,X,Y,Z)
+#define DBLSCAN_VER_STRING                DBLSCAN_VER_STRING_HLP3(DBLSCAN_VER_MAJOR,DBLSCAN_VER_MINOR_HI,DBLSCAN_VER_MAJOR_LO,DBLSCAN_VER_PATCH)
+
+#endif //DBLSCAN_VERSION
