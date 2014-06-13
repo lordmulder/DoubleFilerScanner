@@ -215,7 +215,7 @@ void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList fil
 	QWriteLocker writeLock(&m_lock);
 
 	beginResetModel();
-	DuplicateItem *currentKey = new DuplicateItem(m_root, hash.toHex().constData());
+	DuplicateItem *currentKey = new DuplicateItem(m_root, QString("%1 (x%2)").arg(hash.toHex().constData(), QString::number(files.count())));
 	for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
 	{
 		DuplicateItem *currentFile = new DuplicateItem(currentKey, (*iterFile), true);

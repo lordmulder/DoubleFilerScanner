@@ -26,6 +26,7 @@
 #include <QRunnable>
 #include <QStringList>
 #include <QQueue>
+#include <QSet>
 
 class QThreadPool;
 class QEventLoop;
@@ -60,8 +61,10 @@ public:
 	DirectoryScanner(volatile bool *abortFlag, const bool recursive = true);
 	virtual ~DirectoryScanner(void);
 
+	void setRecursive(const bool &recusrive);
 	void addDirectory(const QString &path);
-	const QStringList &getFiles(void) const;
+	void addDirectories(const QStringList &paths);
+	const QStringList getFiles(void) const;
 
 private slots:
 	void directoryDone(const QStringList *files, const QStringList *dirs);
@@ -70,11 +73,11 @@ protected:
 	virtual void run(void);
 	void scanDirectory(const QString path);
 	
-	const bool m_recusrive;
+	bool m_recusrive;
 
 	QThreadPool *m_pool;
 	QQueue<QString> m_pendingDirs;
-	QStringList m_files;
+	QSet<QString> m_files;
 	quint64 m_pendingTasks;
 
 	volatile bool *const m_abortFlag;

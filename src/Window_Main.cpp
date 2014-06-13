@@ -45,6 +45,8 @@ static void UNSET_MODEL(QTreeView *view)
 	MY_DELETE(selectionModel);
 }
 
+static const char HOMEPAGE_URL[] = "http://muldersoft.com/";
+
 //===================================================================
 // Constructor & Destructor
 //===================================================================
@@ -164,6 +166,9 @@ void MainWindow::startScan(void)
 
 	if(directoriesDialog->exec() == QDialog::Accepted)
 	{
+		const bool recursive = directoriesDialog->getRecursive();
+		const QStringList directories = directoriesDialog->getDirectories();
+
 		setButtonsEnabled(false);
 		m_abortFlag = false;
 		UNSET_MODEL(ui->treeView);
@@ -177,7 +182,8 @@ void MainWindow::startScan(void)
 		ui->progressBar->setValue(0);
 		ui->progressBar->setMaximum(0);
 
-		m_directoryScanner->addDirectory(QString());
+		m_directoryScanner->setRecursive(recursive);
+		m_directoryScanner->addDirectories(directories);
 		m_directoryScanner->start();
 	}
 
@@ -252,6 +258,20 @@ void MainWindow::itemActivated(const QModelIndex &index)
 
 void MainWindow::showAbout(void)
 {
+	QString text;
+	const QString tmplt = QString("<nobr><tt>%1</tt></nobr><br>");
+
+	text += tmplt.arg(QString().sprintf("<b>Double File Scanner, Version %u.%02u-%u</b>", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH));
+	text += tmplt.arg("Copyright (c) 2014 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.");
+	text += tmplt.arg(QString().sprintf("Built on %s at %s with %s for Win-%s.\n", DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH));
+	text += "<br>";
+	text += tmplt.arg("This program is free software: you can redistribute it and/or modify");
+	text += tmplt.arg("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
+	text += tmplt.arg("Note that this program is distributed with ABSOLUTELY NO WARRANTY.\n");
+	text += "<br>";
+	text += tmplt.arg(QString("Please check <a href=\"%1\">%1</a> for news and updates!").arg(HOMEPAGE_URL));
+
+	QMessageBox::information(this, tr("About..."), text);
 	QMessageBox::aboutQt(this);
 }
 

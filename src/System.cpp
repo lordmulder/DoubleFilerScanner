@@ -142,9 +142,13 @@ void printConsole(const char* text, const int &logLevel)
 			SetConsoleTextAttribute(g_hConsole, COLORS[logLevel]);
 		}
 	
+		char buffer[256];
+		strncpy_s(buffer, 256, text, _TRUNCATE);
+		const size_t len = lstrlenA(buffer);
+		buffer[len] = '\n'; //replace \0 with \n
+
 		DWORD written;
-		WriteConsoleA(g_hConsole, text, lstrlenA(text), &written, NULL);
-		WriteConsoleA(g_hConsole, "\r\n", 2, &written, NULL);
+		WriteConsoleA(g_hConsole, buffer, len+1, &written, NULL);
 	}
 
 	_InterlockedExchange(&consoleLock, 0L);

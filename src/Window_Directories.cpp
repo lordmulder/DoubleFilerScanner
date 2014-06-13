@@ -26,6 +26,10 @@
 #include "Config.h"
 #include "System.h"
 
+#include <QDir>
+#include <QFileDialog>
+#include <QTimer>
+
 #include <cassert>
 
 //===================================================================
@@ -45,6 +49,17 @@ DirectoriesDialog::DirectoriesDialog(QWidget *const parent)
 
 	//Setup size
 	setMinimumSize(size());
+
+	//Setup connections
+	connect(ui->buttonAddDir,    SIGNAL(clicked()), this, SLOT(addDirectory()));
+	connect(ui->buttonClear,     SIGNAL(clicked()), this, SLOT(clearDirectories()));
+	connect(ui->buttonRemoveDir, SIGNAL(clicked()), this, SLOT(removeDirectory()));
+
+	//Disable button initially
+	ui->buttonOkay->setEnabled(false);
+
+	//Set initial path
+	m_lastPath = QDir::homePath();
 }
 
 DirectoriesDialog::~DirectoriesDialog(void)
@@ -59,12 +74,59 @@ DirectoriesDialog::~DirectoriesDialog(void)
 void DirectoriesDialog::showEvent(QShowEvent *e)
 {
 	resizeEvent(NULL);
+	QTimer::singleShot(0, this, SLOT(addDirectory()));
 }
 
 //===================================================================
 // Slots
 //===================================================================
 
+void DirectoriesDialog::addDirectory(void)
+{
+	const QString path = QFileDialog::getExistingDirectory(this, tr("Choose Directory"), m_lastPath);
+
+	if(!path.isEmpty())
+	{
+		QListWidgetItem *item = new QListWidgetItem(QIcon(":/res/Icon_Duplicate.png"), path, ui->listWidget);
+		ui->listWidget->addItem(item);
+		
+		QDir lastPath(path);
+		lastPath.cdUp();
+		m_lastPath = lastPath.path();
+	}
+
+	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+}
+
+void DirectoriesDialog::removeDirectory(void)
+{
+	qDeleteAll(ui->listWidget->selectedItems());
+	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+}
+
+void DirectoriesDialog::clearDirectories(void)
+{
+	ui->listWidget->clear();
+	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+}
+
 //===================================================================
-// Private Functions
+// Public Functions
 //===================================================================
+
+QStringList DirectoriesDialog::getDirectories(void)
+{
+	QStringList directories;
+
+	for(int i = 0; i < ui->listWidget->count(); i++)
+	{
+		directories << QDir::fromNativeSeparators(ui->listWidget->item(i)->text());
+	}
+	
+	return directories;
+}
+
+bool DirectoriesDialog::getRecursive(void)
+{
+	return ui->checkBoxRecursive->isChecked();
+}

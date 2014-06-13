@@ -63,11 +63,16 @@ void DirectoryScanner::run(void)
 	m_files.clear();
 	m_pendingTasks = 0;
 
+	if(m_pendingDirs.count() < 1)
+	{
+		qWarning("File list is empty -> Nothing to do!");
+		return;
+	}
+
 	qDebug("Pending dirs: %d", m_pendingDirs.count());
 
 	while((!m_pendingDirs.empty()) && (m_pendingTasks < MAX_ENQUEUED_TASKS))
 	{
-		qDebug("Test");
 		scanDirectory(m_pendingDirs.dequeue());
 	}
 
@@ -85,8 +90,6 @@ void DirectoryScanner::run(void)
 	}
 
 	qDebug("Found %d files!", m_files.count());
-	m_files.sort();
-
 	qDebug("Thread will exit!\n");
 }
 
@@ -102,7 +105,10 @@ void DirectoryScanner::scanDirectory(const QString path)
 
 void DirectoryScanner::directoryDone(const QStringList *files, const QStringList *dirs)
 {
-	m_files << (*files);
+	for(QStringList::ConstIterator iter = files->constBegin(); iter != files->constEnd(); iter++)
+	{
+		m_files.insert(*iter);
+	}
 
 	if(m_recusrive)
 	{
@@ -134,7 +140,29 @@ void DirectoryScanner::addDirectory(const QString &path)
 	m_pendingDirs << path;
 }
 
-const QStringList &DirectoryScanner::getFiles(void) const
+void DirectoryScanner::addDirectories(const QStringList &paths)
+{
+	if(this->isRunning())
+	{
+		qWarning("Cannot add input while thread is still running!");
+		return;
+	}
+
+	m_pendingDirs << paths;
+}
+
+void DirectoryScanner::setRecursive(const bool &recusrive)
+{
+	if(this->isRunning())
+	{
+		qWarning("Cannot add input while thread is still running!");
+		return;
+	}
+
+	m_recusrive = recusrive;
+}
+
+const QStringList DirectoryScanner::getFiles(void) const
 {
 	if(this->isRunning())
 	{
@@ -142,7 +170,10 @@ const QStringList &DirectoryScanner::getFiles(void) const
 		return EMPTY_STRINGLIST;
 	}
 
-	return m_files;
+	QStringList fileList = m_files.values();
+
+	fileList.sort();
+	return fileList;
 }
 
 //=======================================================================================
@@ -187,11 +218,11 @@ void DirectoryScannerTask::run(void)
 			{
 				if(info.isFile())
 				{
-					files << path;
+					files << info.canonicalFilePath();
 				}
 				else if(info.isDir())
 				{
-					dirs << path;
+					dirs << info.canonicalFilePath();
 				}
 			}
 		}

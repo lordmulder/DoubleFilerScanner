@@ -38,8 +38,17 @@ public:
 	DirectoriesDialog(QWidget *const parent);
 	virtual ~DirectoriesDialog(void);
 
+	QStringList getDirectories(void);
+	bool getRecursive(void);
+
+private slots:
+	void addDirectory(void);
+	void removeDirectory(void);
+	void clearDirectories(void);
+
 protected:
 	virtual void showEvent(QShowEvent *e);
 
+	QString m_lastPath;
 	Ui::DirectoriesDialog *const ui;
 };
