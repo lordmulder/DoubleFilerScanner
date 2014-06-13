@@ -94,6 +94,11 @@ void FileComparator::run(void)
 		m_files.clear();
 	}
 
+	while(!m_pool->waitForDone(5000))
+	{
+		qWarning("Still have running taks -> waiting for completeion!");
+	}
+
 	if(!(*m_abortFlag))
 	{
 		qDebug("\n[Searching Duplicates]");

@@ -79,6 +79,11 @@ void DirectoryScanner::run(void)
 		m_pendingDirs.clear();
 	}
 
+	while(!m_pool->waitForDone(5000))
+	{
+		qWarning("Still have running taks -> waiting for completeion!");
+	}
+
 	qDebug("Found %d files!", m_files.count());
 	m_files.sort();
 
