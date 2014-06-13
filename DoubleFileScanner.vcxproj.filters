@@ -69,6 +69,12 @@
     <ClCompile Include="tmp\Common\moc\MOC_Model_Duplicates.cpp">
       <Filter>Source Files\Generated\MOC</Filter>
     </ClCompile>
+    <ClCompile Include="tmp\Common\moc\MOC_Window_Directories.cpp">
+      <Filter>Source Files\Generated\MOC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window_Directories.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\System.h">
@@ -81,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window_Directories.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -108,5 +117,10 @@
     <ResourceCompile Include="DoubleFileScanner.rcx">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gui\Window_Directories.ui">
+      <Filter>Dialogs</Filter>
+    </None>
   </ItemGroup>
 </Project>

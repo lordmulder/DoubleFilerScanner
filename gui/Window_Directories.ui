@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DirectoriesDialog</class>
+ <widget class="QDialog" name="DirectoriesDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>594</width>
+    <height>240</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Select Directories</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListWidget" name="listWidget"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="buttonAddDir">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Add Directory</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../DoubleFileScanner.qrc">
+           <normaloff>:/res/Button_FolderAdd.png</normaloff>:/res/Button_FolderAdd.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonRemoveDir">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Remove Directory</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../DoubleFileScanner.qrc">
+           <normaloff>:/res/Button_FolderRemove.png</normaloff>:/res/Button_FolderRemove.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonClear">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Clear Directories</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../DoubleFileScanner.qrc">
+           <normaloff>:/res/Button_Clear.png</normaloff>:/res/Button_Clear.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::HLine</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QCheckBox" name="checkBoxRecursive">
+         <property name="text">
+          <string>Recurse Sub-Directories</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonOkay">
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>OK</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../DoubleFileScanner.qrc">
+           <normaloff>:/res/Button_Accept.png</normaloff>:/res/Button_Accept.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonCancel">
+         <property name="minimumSize">
+          <size>
+           <width>90</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../DoubleFileScanner.qrc">
+           <normaloff>:/res/Button_Cancel.png</normaloff>:/res/Button_Cancel.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>buttonOkay</tabstop>
+  <tabstop>buttonCancel</tabstop>
+  <tabstop>buttonAddDir</tabstop>
+  <tabstop>buttonRemoveDir</tabstop>
+  <tabstop>buttonClear</tabstop>
+  <tabstop>listWidget</tabstop>
+  <tabstop>checkBoxRecursive</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../DoubleFileScanner.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonOkay</sender>
+   <signal>clicked()</signal>
+   <receiver>DirectoriesDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>441</x>
+     <y>350</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>296</x>
+     <y>186</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>DirectoriesDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>537</x>
+     <y>350</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>296</x>
+     <y>186</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

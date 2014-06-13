@@ -28,6 +28,7 @@
 #include "Thread_DirectoryScanner.h"
 #include "Thread_FileComparator.h"
 #include "Model_Duplicates.h"
+#include "Window_Directories.h"
 
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -159,9 +160,9 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 
 void MainWindow::startScan(void)
 {
-	const QString path = QFileDialog::getExistingDirectory(this, tr("Choose directory to be scanned"), QDir::homePath(), QFileDialog::ShowDirsOnly);
+	DirectoriesDialog *directoriesDialog = new DirectoriesDialog(this);
 
-	if(!path.isEmpty())
+	if(directoriesDialog->exec() == QDialog::Accepted)
 	{
 		setButtonsEnabled(false);
 		m_abortFlag = false;
@@ -176,9 +177,11 @@ void MainWindow::startScan(void)
 		ui->progressBar->setValue(0);
 		ui->progressBar->setMaximum(0);
 
-		m_directoryScanner->addDirectory(path);
+		m_directoryScanner->addDirectory(QString());
 		m_directoryScanner->start();
 	}
+
+	MY_DELETE(directoriesDialog);
 }
 
 void MainWindow::directoryScannerFinished(void)

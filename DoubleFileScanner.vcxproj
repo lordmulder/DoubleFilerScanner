@@ -20,11 +20,13 @@
     <ClCompile Include="src\Thread_DirectoryScanner.cpp" />
     <ClCompile Include="src\Thread_FileComparator.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Window_Directories.cpp" />
     <ClCompile Include="src\Window_Main.cpp" />
     <ClCompile Include="src\System.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Model_Duplicates.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_DirectoryScanner.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_FileComparator.cpp" />
+    <ClCompile Include="tmp\Common\moc\MOC_Window_Directories.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Window_Main.cpp" />
     <ClCompile Include="tmp\Common\rcc\RCC_DoubleFileScanner.cpp" />
   </ItemGroup>
@@ -51,6 +53,14 @@
   <ItemGroup>
     <ClInclude Include="src\Config.h" />
     <ClInclude Include="src\Version.h" />
+    <CustomBuild Include="src\Window_Directories.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+    </CustomBuild>
     <CustomBuild Include="src\Window_Main.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
@@ -89,6 +99,17 @@
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="gui\Window_Directories.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>

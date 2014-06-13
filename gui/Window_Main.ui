@@ -178,6 +178,12 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>buttonStart</tabstop>
+  <tabstop>buttonAbout</tabstop>
+  <tabstop>buttonExit</tabstop>
+  <tabstop>treeView</tabstop>
+ </tabstops>
  <resources>
   <include location="../DoubleFileScanner.qrc"/>
  </resources>
