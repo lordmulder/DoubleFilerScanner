@@ -5,6 +5,10 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_Static|Win32">
+      <Configuration>Release_Static</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -14,6 +18,7 @@
     <ClCompile Include="src\Config.cpp" />
     <ClCompile Include="src\extra\qtmain_win.cpp">
       <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWChar_tAsBuiltInType>
+      <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">false</TreatWChar_tAsBuiltInType>
       <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <ClCompile Include="src\Model_Duplicates.cpp" />
@@ -33,8 +38,11 @@
   <ItemGroup>
     <CustomBuild Include="src\Thread_DirectoryScanner.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
@@ -44,10 +52,13 @@
     <CustomBuild Include="src\Thread_FileComparator.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -56,26 +67,35 @@
     <CustomBuild Include="src\Window_Directories.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="src\Window_Main.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="src\Model_Duplicates.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\moc.exe" -o "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">MOC "$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\moc\MOC_%(Filename).cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="src\Resource.h" />
     <ClInclude Include="src\System.h" />
@@ -87,8 +107,11 @@
     <CustomBuild Include="DoubleFileScanner.qrc">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\rcc.exe" -o "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp" -name "%(Filename)" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\rcc.exe" -o "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp" -name "%(Filename)" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">RCC "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">RCC "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\rcc.exe" -o "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp" -name "%(Filename)" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RCC "$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\rcc\RCC_%(Filename).cpp;%(Outputs)</Outputs>
@@ -98,11 +121,14 @@
     <CustomBuild Include="gui\Window_Main.ui">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -110,11 +136,17 @@
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">"$(QTDIR)\bin\uic.exe" -o "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">UIC "$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h"</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">$(SolutionDir)\tmp\Common\uic\UIC_%(Filename).h;%(Outputs)</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="etc\Manifest\Compatibility.manifest" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1F2F5657-68CC-4A78-A900-1929DDE3713F}</ProjectGuid>
@@ -135,6 +167,13 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -144,6 +183,9 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -151,6 +193,11 @@
     <IntDir>$(SolutionDir)tmp\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)tmp\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)tmp\$(Platform)\$(Configuration)\</IntDir>
@@ -194,6 +241,33 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(QTDIR)\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>QtCore4.lib;QtGui4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>del $(IntermediateOutputPath)\Config.obj</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;QT_NO_DEBUG;QT_NODLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(QTDIR)\include;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(SolutionDir)\tmp\Common\uic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)\etc\EncodePointer\lib;$(SolutionDir)\..\LameXP_Qt\etc\Prerequisites\qt4_static\lib;$(SolutionDir)\..\LameXP_Qt\etc\Prerequisites\qt4_static\plugins\imageformats</AdditionalLibraryDirectories>
+      <AdditionalDependencies>QtCore.lib;QtGui.lib;QtSvg.lib;qtmain.lib;qsvg.lib;qico.lib;qtga.lib;Winmm.lib;imm32.lib;ws2_32.lib;Shlwapi.lib;EncodePointer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>del $(IntermediateOutputPath)\Config.obj</Command>

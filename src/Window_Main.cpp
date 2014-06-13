@@ -35,6 +35,7 @@
 #include <QMessageBox>
 #include <QMovie>
 #include <QProcess>
+#include <QMap>
 
 #include <cassert>
 
@@ -103,7 +104,7 @@ MainWindow::MainWindow(void)
 
 	//Create context menu
 	ui->treeView->setContextMenuPolicy(Qt::NoContextMenu);
-	QAction *actionExport = new QAction(QIcon(":/res/Button_Export.png"), tr("Export Duplciate-List to File"), ui->treeView);
+	QAction *actionExport = new QAction(QIcon(":/res/Button_Export.png"), tr("Export Duplciates to File"), ui->treeView);
 	connect(actionExport, SIGNAL(triggered()), this, SLOT(exportToFile()));
 	ui->treeView->addAction(actionExport);
 }
@@ -267,10 +268,16 @@ void MainWindow::itemActivated(const QModelIndex &index)
 
 void MainWindow::exportToFile(void)
 {
-	const QString outFile = QFileDialog::getSaveFileName(this, tr("Select Output File"), QDir::homePath(), tr("INI File (*.ini)"));
+	QMap<QString,int> filters;
+	filters.insert(tr("INI File (*.ini)"), DuplicatesModel::FORMAT_INI);
+	filters.insert(tr("XML File (*.xml)"), DuplicatesModel::FORMAT_XML);
+
+	QString selectedFilter;
+	const QString outFile = QFileDialog::getSaveFileName(this, tr("Select Output File"), QDir::homePath(), ((QStringList)filters.keys()).join(";;"), &selectedFilter);
+
 	if(!outFile.isEmpty())
 	{
-		m_model->exportToFile(outFile);
+		m_model->exportToFile(outFile, filters.value(selectedFilter));
 	}
 }
 

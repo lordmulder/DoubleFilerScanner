@@ -89,9 +89,6 @@
     <ClInclude Include="src\Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Window_Directories.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DoubleFileScanner.qrc">
@@ -112,6 +109,12 @@
     <CustomBuild Include="src\Model_Duplicates.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="src\Window_Directories.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="gui\Window_Directories.ui">
+      <Filter>Dialogs</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DoubleFileScanner.rcx">
@@ -119,8 +122,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="gui\Window_Directories.ui">
-      <Filter>Dialogs</Filter>
-    </None>
+    <Manifest Include="etc\Manifest\Compatibility.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

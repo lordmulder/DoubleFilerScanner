@@ -34,6 +34,14 @@
 #include "System.h"
 #include "Window_Main.h"
 
+//Initialize static Qt plugins
+#ifdef QT_NODLL
+Q_IMPORT_PLUGIN(qico)
+Q_IMPORT_PLUGIN(qsvg)
+Q_IMPORT_PLUGIN(qtga)
+#endif
+
+//Message handler routine
 static void msg_handler(QtMsgType type, const char *msg)
 {
 	switch(type)
@@ -51,6 +59,7 @@ static void msg_handler(QtMsgType type, const char *msg)
 	}
 }
 
+//Initialize Qt runtime
 static QApplication *init_qt(int argc, char* argv[])
 {
 	qDebug("Using Qt v%s-%s [%s], compiled with Qt v%s [%s]\n", qVersion(), (qSharedBuild() ? "DLL" : "Static"), QLibraryInfo::buildDate().toString(Qt::ISODate).toLatin1().constData(), QT_VERSION_STR, QT_PACKAGEDATE_STR);
@@ -80,6 +89,7 @@ static QApplication *init_qt(int argc, char* argv[])
 	return application;
 }
 
+//Main function
 static int double_file_scanner(int argc, char* argv[])
 {
 	qInstallMsgHandler(msg_handler);

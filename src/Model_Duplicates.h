@@ -27,6 +27,7 @@
 #include <QReadwriteLock>
 
 class DuplicateItem;
+class QFile;
 
 //DuplicatesModel class
 class DuplicatesModel: public QAbstractItemModel
@@ -44,10 +45,18 @@ public:
 	virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	
+	//Export formats
+	typedef enum
+	{
+		FORMAT_INI = 0,
+		FORMAT_XML = 1
+	}
+	exportFormat_t;
+
 	unsigned int duplicateCount(void) const;
 	const QString &getFilePath(const QModelIndex &index) const;
 	void addDuplicate(const QByteArray &hash, const QStringList files);
-	bool exportToFile(const QString &outFile);
+	bool exportToFile(const QString &outFile, const int &format);
 	void clear(void);
 
 protected:
@@ -57,6 +66,9 @@ protected:
 	QIcon *m_bulIcon;
 	QFont *m_fontDflt;
 	QFont *m_fontBold;
-
+	
 	mutable QReadWriteLock m_lock;
+
+	bool exportToIni(const QString &outFile);
+	bool exportToXml(const QString &outFile);
 };

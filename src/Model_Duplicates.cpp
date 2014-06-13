@@ -26,6 +26,8 @@
 #include <QFont>
 #include <QIcon>
 #include <QDir>
+#include <QSettings>
+#include <QXmlStreamWriter>
 
 #include "Config.h"
 
@@ -245,22 +247,76 @@ const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
 	return EMPTY_STRING;
 }
 
-bool DuplicatesModel::exportToFile(const QString &outFile)
+bool DuplicatesModel::exportToFile(const QString &outFile, const int &format)
 {
-	QFile file(outFile);
-
-	if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate))
+	switch(format)
 	{
-		qWarning("Failed to open file!");
+	case FORMAT_INI:
+		return exportToIni(outFile);
+		break;
+	case FORMAT_XML:
+		return exportToXml(outFile);
+		break;
+	}
+
+	return false;
+}
+
+bool DuplicatesModel::exportToIni(const QString &outFile)
+{
+	QSettings settings(outFile, QSettings::IniFormat);
+	settings.clear();
+	const int hashCount = m_root->childCount();
+	
+	if(settings.status() != QSettings::NoError)
+	{
+		qWarning("Failed to open output file!");
 		return false;
 	}
-	
-	const int hashCount = m_root->childCount();
 
 	for(int i = 0; i < hashCount; i++)
 	{
 		DuplicateItem *currentHash = m_root->child(i);
-		file.write(QString("[%1]\r\n").arg(currentHash->text()).toUtf8());
+
+		settings.beginGroup(currentHash->text());
+		unsigned int counter = 0;
+		const int fileCount = currentHash->childCount();
+		
+		for(int j = 0; j < fileCount; j++)
+		{
+			DuplicateItem *currentFile = currentHash->child(j);
+			settings.setValue(QString().sprintf("%08u", counter++), QDir::toNativeSeparators(currentFile->text()));
+		}
+
+		settings.endGroup();
+	}
+
+	return true;
+}
+
+bool DuplicatesModel::exportToXml(const QString &outFile)
+{
+	QFile file(outFile);
+
+	if(!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+	{
+		qWarning("Failed to open output file!");
+		return false;
+	}
+
+	QXmlStreamWriter stream(&file);
+	const int hashCount = m_root->childCount();
+
+	stream.setAutoFormatting(true);
+	stream.writeStartDocument();
+	stream.writeStartElement("Duplicates");
+
+	for(int i = 0; i < hashCount; i++)
+	{
+		DuplicateItem *currentHash = m_root->child(i);
+
+		stream.writeStartElement("Hash");
+		stream.writeAttribute("Sha1", currentHash->text());
 		
 		unsigned int counter = 0;
 		const int fileCount = currentHash->childCount();
@@ -268,12 +324,17 @@ bool DuplicatesModel::exportToFile(const QString &outFile)
 		for(int j = 0; j < fileCount; j++)
 		{
 			DuplicateItem *currentFile = currentHash->child(j);
-			file.write(QString("%1=%2\r\n").arg(QString().sprintf("%08u", counter++), QDir::toNativeSeparators(currentFile->text())).toUtf8());
+
+			stream.writeStartElement("File");
+			stream.writeAttribute("Name", QDir::toNativeSeparators(currentFile->text()));
+			stream.writeEndElement();
 		}
 
-		file.write("\r\n");
+		stream.writeEndElement();
 	}
 
+	stream.writeEndElement();
 	file.close();
+	
 	return true;
 }
