@@ -215,7 +215,7 @@ void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList fil
 	QWriteLocker writeLock(&m_lock);
 
 	beginResetModel();
-	DuplicateItem *currentKey = new DuplicateItem(m_root, QString("%1 (x%2)").arg(hash.toHex().constData(), QString::number(files.count())));
+	DuplicateItem *currentKey = new DuplicateItem(m_root, hash.toHex().constData());
 	for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
 	{
 		DuplicateItem *currentFile = new DuplicateItem(currentKey, (*iterFile), true);
@@ -243,4 +243,37 @@ const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
 	}
 	
 	return EMPTY_STRING;
+}
+
+bool DuplicatesModel::exportToFile(const QString &outFile)
+{
+	QFile file(outFile);
+
+	if(!file.open(QIODevice::WriteOnly|QIODevice::Truncate))
+	{
+		qWarning("Failed to open file!");
+		return false;
+	}
+	
+	const int hashCount = m_root->childCount();
+
+	for(int i = 0; i < hashCount; i++)
+	{
+		DuplicateItem *currentHash = m_root->child(i);
+		file.write(QString("[%1]\r\n").arg(currentHash->text()).toUtf8());
+		
+		unsigned int counter = 0;
+		const int fileCount = currentHash->childCount();
+		
+		for(int j = 0; j < fileCount; j++)
+		{
+			DuplicateItem *currentFile = currentHash->child(j);
+			file.write(QString("%1=%2\r\n").arg(QString().sprintf("%08u", counter++), QDir::toNativeSeparators(currentFile->text())).toUtf8());
+		}
+
+		file.write("\r\n");
+	}
+
+	file.close();
+	return true;
 }

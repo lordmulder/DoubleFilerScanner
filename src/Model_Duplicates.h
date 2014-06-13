@@ -47,6 +47,7 @@ public:
 	unsigned int duplicateCount(void) const;
 	const QString &getFilePath(const QModelIndex &index) const;
 	void addDuplicate(const QByteArray &hash, const QStringList files);
+	bool exportToFile(const QString &outFile);
 	void clear(void);
 
 protected:

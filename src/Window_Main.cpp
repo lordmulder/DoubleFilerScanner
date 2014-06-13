@@ -100,6 +100,12 @@ MainWindow::MainWindow(void)
 	m_signQuiescent = makeLabel(ui->treeView, ":/res/Sign_Clocks.png", 0);
 	m_signCompleted = makeLabel(ui->treeView, ":/res/Sign_Accept.png", 1);
 	m_signCancelled = makeLabel(ui->treeView, ":/res/Sign_Cancel.png", 1);
+
+	//Create context menu
+	ui->treeView->setContextMenuPolicy(Qt::NoContextMenu);
+	QAction *actionExport = new QAction(QIcon(":/res/Button_Export.png"), tr("Export Duplciate-List to File"), ui->treeView);
+	connect(actionExport, SIGNAL(triggered()), this, SLOT(exportToFile()));
+	ui->treeView->addAction(actionExport);
 }
 
 MainWindow::~MainWindow(void)
@@ -171,7 +177,9 @@ void MainWindow::startScan(void)
 
 		setButtonsEnabled(false);
 		m_abortFlag = false;
+
 		UNSET_MODEL(ui->treeView);
+		ui->treeView->setContextMenuPolicy(Qt::NoContextMenu);
 
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
 	
@@ -230,6 +238,7 @@ void MainWindow::fileComparatorFinished(void)
 	if(m_model->duplicateCount() > 0)
 	{
 		UNSET_MODEL(ui->treeView);
+		ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
 		ui->treeView->setModel(m_model);
 	}
 	else
@@ -253,6 +262,15 @@ void MainWindow::itemActivated(const QModelIndex &index)
 	if(!filePath.isEmpty())
 	{
 		shellExplore((const wchar_t*)QDir::toNativeSeparators(filePath).utf16());
+	}
+}
+
+void MainWindow::exportToFile(void)
+{
+	const QString outFile = QFileDialog::getSaveFileName(this, tr("Select Output File"), QDir::homePath(), tr("INI File (*.ini)"));
+	if(!outFile.isEmpty())
+	{
+		m_model->exportToFile(outFile);
 	}
 }
 

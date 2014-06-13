@@ -51,6 +51,7 @@ private slots:
 	void fileComparatorProgressChanged(const int &progress);
 	void fileComparatorFinished(void);
 	void itemActivated(const QModelIndex &index);
+	void exportToFile(void);
 	void showAbout(void);
 
 protected:
