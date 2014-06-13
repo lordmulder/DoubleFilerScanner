@@ -24,9 +24,13 @@
 
 #include <QString>
 
+class QWidget;
+class QIcon;
+
 void crashHandler(const char *message);
 void initConsole(void);
 void initErrorHandlers(void);
 void printConsole(const char* text, const int &logLevel);
 quint32 getCurrentThread(void);
+void changeWindowIcon(QWidget *window, const QIcon &icon, const bool bIsBigIcon = true);
 void shellExplore(const wchar_t *path);

@@ -24,6 +24,8 @@
 
 #include <QDialog>
 
+class QLabel;
+
 //UIC forward declartion
 namespace Ui {
 	class DirectoriesDialog;
@@ -48,7 +50,10 @@ private slots:
 
 protected:
 	virtual void showEvent(QShowEvent *e);
+	virtual void resizeEvent(QResizeEvent *e);
 
+	QLabel *m_label;
 	QString m_lastPath;
+
 	Ui::DirectoriesDialog *const ui;
 };

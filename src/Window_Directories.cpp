@@ -29,6 +29,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QTimer>
+#include <QLabel>
+#include <QMessageBox>
 
 #include <cassert>
 
@@ -60,10 +62,27 @@ DirectoriesDialog::DirectoriesDialog(QWidget *const parent)
 
 	//Set initial path
 	m_lastPath = QDir::homePath();
+
+	//Create label
+	m_label = new QLabel(ui->listWidget);
+	m_label->setText(tr("Please add at least one directory..."));
+	m_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	
+
+	//Configure font
+	QFont font = m_label->font();
+	font.setBold(true);
+	m_label->setFont(font);
+
+	//Configure color
+	QPalette palette = m_label->palette();
+	palette.setColor(QPalette::WindowText, QColor(Qt::darkGray));
+	m_label->setPalette(palette);
 }
 
 DirectoriesDialog::~DirectoriesDialog(void)
 {
+	MY_DELETE(m_label);
 	delete ui;
 }
 
@@ -73,8 +92,15 @@ DirectoriesDialog::~DirectoriesDialog(void)
 
 void DirectoriesDialog::showEvent(QShowEvent *e)
 {
+	QDialog::showEvent(e);
 	resizeEvent(NULL);
 	QTimer::singleShot(0, this, SLOT(addDirectory()));
+}
+
+void DirectoriesDialog::resizeEvent(QResizeEvent *e)
+{
+	QDialog::resizeEvent(e);
+	m_label->resize(ui->listWidget->viewport()->size());
 }
 
 //===================================================================
@@ -87,27 +113,39 @@ void DirectoriesDialog::addDirectory(void)
 
 	if(!path.isEmpty())
 	{
-		QListWidgetItem *item = new QListWidgetItem(QIcon(":/res/Icon_Duplicate.png"), path, ui->listWidget);
+		for(int i = 0; i < ui->listWidget->count(); i++)
+		{
+			if(QDir::fromNativeSeparators(path).compare(QDir::fromNativeSeparators(ui->listWidget->item(i)->text()), Qt::CaseInsensitive) == 0)
+			{
+				QMessageBox::warning(this, tr("Warning"), tr("The selected directory is already on the list!"));
+				return;
+			}
+		}
+
+		QListWidgetItem *item = new QListWidgetItem(QIcon(":/res/Icon_Folder.png"), path, ui->listWidget);
 		ui->listWidget->addItem(item);
 		
 		QDir lastPath(path);
 		lastPath.cdUp();
 		m_lastPath = lastPath.path();
-	}
 
-	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+		ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+		m_label->setVisible(ui->listWidget->count() < 1);
+	}
 }
 
 void DirectoriesDialog::removeDirectory(void)
 {
 	qDeleteAll(ui->listWidget->selectedItems());
 	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+	m_label->setVisible(ui->listWidget->count() < 1);
 }
 
 void DirectoriesDialog::clearDirectories(void)
 {
 	ui->listWidget->clear();
 	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+	m_label->setVisible(ui->listWidget->count() < 1);
 }
 
 //===================================================================

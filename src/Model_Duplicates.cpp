@@ -60,6 +60,9 @@ protected:
 
 	DuplicateItem *const m_parent;
 	QList<DuplicateItem*> m_childeren;
+
+private:
+	DuplicateItem &operator=(const DuplicateItem&);
 };
 
 DuplicateItem::DuplicateItem(DuplicateItem *const parent, const QString &text, const bool &isFile)
@@ -175,7 +178,7 @@ int DuplicatesModel::rowCount(const QModelIndex &parent) const
 	return item->childCount();
 }
 
-int DuplicatesModel::columnCount(const QModelIndex &parent) const
+int DuplicatesModel::columnCount(const QModelIndex&) const
 {
 	return 1;
 }
@@ -220,7 +223,7 @@ void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList fil
 	DuplicateItem *currentKey = new DuplicateItem(m_root, hash.toHex().constData());
 	for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
 	{
-		DuplicateItem *currentFile = new DuplicateItem(currentKey, (*iterFile), true);
+		new DuplicateItem(currentKey, (*iterFile), true);
 	}
 	endResetModel();
 }
@@ -245,6 +248,29 @@ const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
 	}
 	
 	return EMPTY_STRING;
+}
+
+QString DuplicatesModel::toString(void)
+{
+	QStringList lines;
+	const int hashCount = m_root->childCount();
+
+	for(int i = 0; i < hashCount; i++)
+	{
+		DuplicateItem *currentHash = m_root->child(i);
+		lines << currentHash->text();
+		const int fileCount = currentHash->childCount();
+
+		for(int j = 0; j < fileCount; j++)
+		{
+			DuplicateItem *currentFile = currentHash->child(j);
+			lines << QString("- %1").arg(QDir::toNativeSeparators(currentFile->text()));
+		}
+
+		lines << QString();
+	}
+
+	return lines.join("\r\n");
 }
 
 bool DuplicatesModel::exportToFile(const QString &outFile, const int &format)
@@ -315,10 +341,9 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 	{
 		DuplicateItem *currentHash = m_root->child(i);
 
-		stream.writeStartElement("Hash");
-		stream.writeAttribute("Sha1", currentHash->text());
+		stream.writeStartElement("Group");
+		stream.writeAttribute("Hash", currentHash->text());
 		
-		unsigned int counter = 0;
 		const int fileCount = currentHash->childCount();
 		
 		for(int j = 0; j < fileCount; j++)

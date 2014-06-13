@@ -57,6 +57,7 @@ public:
 	const QString &getFilePath(const QModelIndex &index) const;
 	void addDuplicate(const QByteArray &hash, const QStringList files);
 	bool exportToFile(const QString &outFile, const int &format);
+	QString toString(void);
 	void clear(void);
 
 protected:

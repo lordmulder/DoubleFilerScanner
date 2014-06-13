@@ -19,6 +19,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <property name="topMargin">
+     <number>12</number>
+    </property>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
@@ -177,6 +180,105 @@
     </item>
    </layout>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>532</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionStart"/>
+    <addaction name="actionClear"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionClipbrd"/>
+    <addaction name="actionExport"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>?</string>
+    </property>
+    <addaction name="actionHomepage"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actionStart">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_Start.png</normaloff>:/res/Button_Start.png</iconset>
+   </property>
+   <property name="text">
+    <string>Start Scan</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_Clear.png</normaloff>:/res/Button_Clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_Exit.png</normaloff>:/res/Button_Exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit Program</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_Export.png</normaloff>:/res/Button_Export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Duplicates to File</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_About.png</normaloff>:/res/Button_About.png</iconset>
+   </property>
+   <property name="text">
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="actionClipbrd">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_CopyToClipboard.png</normaloff>:/res/Button_CopyToClipboard.png</iconset>
+   </property>
+   <property name="text">
+    <string>Copy to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionHomepage">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_WebLink.png</normaloff>:/res/Button_WebLink.png</iconset>
+   </property>
+   <property name="text">
+    <string>Visit Official Web-Site</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>buttonStart</tabstop>

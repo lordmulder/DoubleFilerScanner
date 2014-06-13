@@ -36,15 +36,17 @@
 #include <fstream>
 #include <cstring>
 
+#include <QWidget>
+#include <QIcon>
+
 #pragma intrinsic(_InterlockedExchange)
 
 typedef BOOL (WINAPI *PSetConsoleIcon)(HICON hIcon);
 
 static volatile HANDLE g_hConsole = INVALID_HANDLE_VALUE;
+static volatile long g_consoleLock = 0L;
 
-
-
-static void my_invalid_param_handler(const wchar_t* exp, const wchar_t* fun, const wchar_t* fil, unsigned int, uintptr_t)
+static void my_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
 {
 	crashHandler("Invalid parameter handler invoked, application will exit!");
 }
@@ -55,10 +57,10 @@ static void my_signal_handler(int signal_num)
 	crashHandler("Signal handler invoked unexpectedly, application will exit!");
 }
 
-static LONG WINAPI my_exception_handler(struct _EXCEPTION_POINTERS *ExceptionInfo)
+static LONG WINAPI my_exception_handler(struct _EXCEPTION_POINTERS*)
 {
 	crashHandler("Unhandeled exception handler invoked, application will exit!");
-	return LONG_MAX;
+	//return LONG_MAX;
 }
 
 void initErrorHandlers()
@@ -78,6 +80,17 @@ void initErrorHandlers()
 
 void initConsole(void)
 {
+	while(_InterlockedExchange(&g_consoleLock, 1L) != 0L)
+	{
+		Sleep(0);
+	}
+
+	if((g_hConsole != NULL) && (g_hConsole != INVALID_HANDLE_VALUE))
+	{
+		_InterlockedExchange(&g_consoleLock, 0L);
+		return;
+	}
+
 	if(AllocConsole())
 	{
 		g_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -121,8 +134,6 @@ void initConsole(void)
 
 void printConsole(const char* text, const int &logLevel)
 {
-	static volatile long consoleLock = 0L;
-
 	static const WORD COLORS[3] =
 	{
 		FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
@@ -130,28 +141,31 @@ void printConsole(const char* text, const int &logLevel)
 		FOREGROUND_RED | FOREGROUND_INTENSITY,
 	};
 
-	while(_InterlockedExchange(&consoleLock, 1L) != 0L)
+	while(_InterlockedExchange(&g_consoleLock, 1L) != 0L)
 	{
 		Sleep(0);
 	}
 
-	if((g_hConsole != NULL) && (g_hConsole != INVALID_HANDLE_VALUE))
+	if((g_hConsole == NULL) || (g_hConsole == INVALID_HANDLE_VALUE))
 	{
-		if((logLevel >= 0) && (logLevel <= 2))
-		{
-			SetConsoleTextAttribute(g_hConsole, COLORS[logLevel]);
-		}
-	
-		char buffer[256];
-		strncpy_s(buffer, 256, text, _TRUNCATE);
-		const size_t len = lstrlenA(buffer);
-		buffer[len] = '\n'; //replace \0 with \n
-
-		DWORD written;
-		WriteConsoleA(g_hConsole, buffer, len+1, &written, NULL);
+		_InterlockedExchange(&g_consoleLock, 0L);
+		return;
 	}
 
-	_InterlockedExchange(&consoleLock, 0L);
+	if((logLevel >= 0) && (logLevel <= 2))
+	{
+		SetConsoleTextAttribute(g_hConsole, COLORS[logLevel]);
+	}
+	
+	char buffer[256];
+	strncpy_s(buffer, 256, text, _TRUNCATE);
+	const size_t len = lstrlenA(buffer);
+	buffer[len] = '\n'; //replace \0 with \n
+
+	DWORD written;
+	WriteConsoleA(g_hConsole, buffer, len+1, &written, NULL);
+
+	_InterlockedExchange(&g_consoleLock, 0L);
 }
 
 void crashHandler(const char *message)
@@ -190,5 +204,30 @@ void shellExplore(const wchar_t *path)
 	{
 		CloseHandle(processInfo.hProcess);
 		CloseHandle(processInfo.hThread);
+	}
+}
+
+static HICON qicon2hicon(const QIcon &icon, const int w, const int h)
+{
+	if(!icon.isNull())
+	{
+		QPixmap pixmap = icon.pixmap(w, h);
+		if(!pixmap.isNull())
+		{
+			return pixmap.toWinHICON();
+		}
+	}
+	return NULL;
+}
+
+void changeWindowIcon(QWidget *window, const QIcon &icon, const bool bIsBigIcon)
+{
+	if(!icon.isNull())
+	{
+		const int extend = (bIsBigIcon ? 32 : 16);
+		if(HICON hIcon = qicon2hicon(icon, extend, extend))
+		{
+			SendMessage(window->winId(), WM_SETICON, (bIsBigIcon ? ICON_BIG : ICON_SMALL), LPARAM(hIcon));
+		}
 	}
 }

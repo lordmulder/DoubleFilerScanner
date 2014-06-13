@@ -36,6 +36,9 @@
 #include <QMovie>
 #include <QProcess>
 #include <QMap>
+#include <QClipboard>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include <cassert>
 
@@ -44,6 +47,15 @@ static void UNSET_MODEL(QTreeView *view)
 	QItemSelectionModel *selectionModel = view->selectionModel();
 	view->setModel(NULL);
 	MY_DELETE(selectionModel);
+}
+
+static void ENABLE_MENU(QMenu *menu, const bool &enabled)
+{
+	QList<QAction*> actions = menu->actions();
+	for(QList<QAction*>::Iterator iter = actions.begin(); iter != actions.end(); iter++)
+	{
+		(*iter)->setEnabled(enabled);
+	}
 }
 
 static const char HOMEPAGE_URL[] = "http://muldersoft.com/";
@@ -64,17 +76,29 @@ MainWindow::MainWindow(void)
 	//Setup UI
 	ui->setupUi(this);
 
+	//Setup window icon
+	changeWindowIcon(this, QIcon(":/res/Logo.png"));
+
 	//Setup title
 	setWindowTitle(tr("Double File Scanner %1").arg(QString().sprintf("v%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
 
 	//Setup size
 	setMinimumSize(size());
 
-	//Setup connections
+	//Setup button connections
 	connect(ui->buttonStart, SIGNAL(clicked()), this, SLOT(startScan()));
 	connect(ui->buttonAbout, SIGNAL(clicked()), this, SLOT(showAbout()));
 	connect(ui->buttonExit,  SIGNAL(clicked()), this, SLOT(close()));
 
+	//Setup menu connections
+	connect(ui->actionStart,     SIGNAL(triggered()), this, SLOT(startScan()));
+	connect(ui->actionClear,   SIGNAL(triggered()), this, SLOT(clearData()));
+	connect(ui->actionExport,   SIGNAL(triggered()), this, SLOT(exportToFile()));
+	connect(ui->actionClipbrd,  SIGNAL(triggered()), this, SLOT(copyToClipboard()));
+	connect(ui->actionExit,     SIGNAL(triggered()), this, SLOT(close()));
+	connect(ui->actionHomepage, SIGNAL(triggered()), this, SLOT(showHomepage()));
+	connect(ui->actionAbout,    SIGNAL(triggered()), this, SLOT(showAbout()));
+	
 	//Create model
 	m_model = new DuplicatesModel();
 	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(itemActivated(QModelIndex)));
@@ -103,10 +127,9 @@ MainWindow::MainWindow(void)
 	m_signCancelled = makeLabel(ui->treeView, ":/res/Sign_Cancel.png", 1);
 
 	//Create context menu
-	ui->treeView->setContextMenuPolicy(Qt::NoContextMenu);
-	QAction *actionExport = new QAction(QIcon(":/res/Button_Export.png"), tr("Export Duplciates to File"), ui->treeView);
-	connect(actionExport, SIGNAL(triggered()), this, SLOT(exportToFile()));
-	ui->treeView->addAction(actionExport);
+	ui->treeView->addActions(ui->menuEdit->actions());
+	ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
+	ENABLE_MENU(ui->menuEdit, false);
 }
 
 MainWindow::~MainWindow(void)
@@ -129,11 +152,14 @@ MainWindow::~MainWindow(void)
 
 void MainWindow::showEvent(QShowEvent *e)
 {
+	QMainWindow::showEvent(e);
 	resizeEvent(NULL);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *e)
 {
+	QMainWindow::resizeEvent(e);
+
 	centerWidget(m_animator);
 	centerWidget(m_signCompleted);
 	centerWidget(m_signCancelled);
@@ -176,12 +202,14 @@ void MainWindow::startScan(void)
 		const bool recursive = directoriesDialog->getRecursive();
 		const QStringList directories = directoriesDialog->getDirectories();
 
-		setButtonsEnabled(false);
 		m_abortFlag = false;
+		setButtonsEnabled(false);
+
+		ENABLE_MENU(ui->menuFile, false);
+		ENABLE_MENU(ui->menuEdit, false);
+		ENABLE_MENU(ui->menuHelp, false);
 
 		UNSET_MODEL(ui->treeView);
-		ui->treeView->setContextMenuPolicy(Qt::NoContextMenu);
-
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
 	
 		m_signCompleted->hide();
@@ -210,6 +238,8 @@ void MainWindow::directoryScannerFinished(void)
 		ui->label->setText(tr("The operation has been aborted by the user!"));
 		m_signCancelled->show();
 		setButtonsEnabled(true);
+		ENABLE_MENU(ui->menuFile, true);
+		ENABLE_MENU(ui->menuHelp, true);
 		return;
 	}
 	
@@ -228,6 +258,8 @@ void MainWindow::fileComparatorFinished(void)
 		ui->label->setText(tr("The operation has been aborted by the user!"));
 		m_signCancelled->show();
 		setButtonsEnabled(true);
+		ENABLE_MENU(ui->menuFile, true);
+		ENABLE_MENU(ui->menuHelp, true);
 		return;
 	}
 
@@ -239,17 +271,20 @@ void MainWindow::fileComparatorFinished(void)
 	if(m_model->duplicateCount() > 0)
 	{
 		UNSET_MODEL(ui->treeView);
-		ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
 		ui->treeView->setModel(m_model);
+		ENABLE_MENU(ui->menuEdit, true);
 	}
 	else
 	{
 		m_signCompleted->show();
 	}
 
+	setButtonsEnabled(true);
+	ENABLE_MENU(ui->menuFile, true);
+	ENABLE_MENU(ui->menuHelp, true);
+
 	QApplication::beep();
 	ui->treeView->expandAll();
-	setButtonsEnabled(true);
 }
 
 void MainWindow::fileComparatorProgressChanged(const int &progress)
@@ -266,19 +301,57 @@ void MainWindow::itemActivated(const QModelIndex &index)
 	}
 }
 
+void MainWindow::clearData(void)
+{
+	if(ui->treeView->model() || m_signCancelled->isVisible() || m_signCompleted->isVisible())
+	{
+		UNSET_MODEL(ui->treeView);
+		ENABLE_MENU(ui->menuEdit, false);
+		m_model->clear();
+
+		ui->progressBar->setMaximum(100);
+		ui->progressBar->setValue(0);
+
+		m_signCompleted->hide();
+		m_signCancelled->hide();
+		m_signQuiescent->show();
+
+		ui->label->setText(tr("Cleared. Please click \"Start Scan\" in order to begin a new scan!"));
+	}
+}
+
 void MainWindow::exportToFile(void)
 {
 	QMap<QString,int> filters;
-	filters.insert(tr("INI File (*.ini)"), DuplicatesModel::FORMAT_INI);
 	filters.insert(tr("XML File (*.xml)"), DuplicatesModel::FORMAT_XML);
+	filters.insert(tr("INI File (*.ini)"), DuplicatesModel::FORMAT_INI);
 
-	QString selectedFilter;
+	QString selectedFilter = filters.key(DuplicatesModel::FORMAT_XML);
 	const QString outFile = QFileDialog::getSaveFileName(this, tr("Select Output File"), QDir::homePath(), ((QStringList)filters.keys()).join(";;"), &selectedFilter);
 
 	if(!outFile.isEmpty())
 	{
-		m_model->exportToFile(outFile, filters.value(selectedFilter));
+		if(m_model->exportToFile(outFile, filters.value(selectedFilter)))
+		{
+			QMessageBox::information(this, tr("Success"), tr("File has been saved successfully."));
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Failed"), tr("Whoops, failed to save file!"));
+		}
 	}
+}
+
+void MainWindow::copyToClipboard(void)
+{
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setText(m_model->toString());
+	QApplication::beep();
+}
+
+void MainWindow::showHomepage(void)
+{
+	QDesktopServices::openUrl(QUrl(HOMEPAGE_URL));
 }
 
 void MainWindow::showAbout(void)
