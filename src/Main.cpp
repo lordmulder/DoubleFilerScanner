@@ -42,6 +42,9 @@ Q_IMPORT_PLUGIN(qsvg)
 Q_IMPORT_PLUGIN(qtga)
 #endif
 
+//VLD support
+#include <vld.h>
+
 //Message handler routine
 static void msg_handler(QtMsgType type, const char *msg)
 {

@@ -1,0 +1,5 @@
+UNINITIALIZED READ
+QtCored4.dll!*
+
+UNINITIALIZED READ
+QtGuid4.dll!*

@@ -104,8 +104,8 @@ void initConsole(void)
 		int hCrtStdErr = _open_osfhandle((intptr_t) GetStdHandle(STD_ERROR_HANDLE),  flags);
 		FILE *hfStdOut = (hCrtStdOut >= 0) ? _fdopen(hCrtStdOut, "wb") : NULL;
 		FILE *hfStdErr = (hCrtStdErr >= 0) ? _fdopen(hCrtStdErr, "wb") : NULL;
-		if(hfStdOut) { *stdout = *hfStdOut; std::cout.rdbuf(new std::filebuf(hfStdOut)); }
-		if(hfStdErr) { *stderr = *hfStdErr; std::cerr.rdbuf(new std::filebuf(hfStdErr)); }
+		if(hfStdOut) { *stdout = *hfStdOut; /*std::cout.rdbuf(new std::filebuf(hfStdOut));*/ }
+		if(hfStdErr) { *stderr = *hfStdErr; /*std::cerr.rdbuf(new std::filebuf(hfStdErr));*/ }
 
 		HWND hwndConsole = GetConsoleWindow();
 		if((hwndConsole != NULL) && (hwndConsole != INVALID_HANDLE_VALUE))
