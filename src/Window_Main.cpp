@@ -40,6 +40,7 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QTimer>
 
 #include <cassert>
 
@@ -58,6 +59,16 @@ static void ENABLE_MENU(QMenu *menu, const bool &enabled)
 		(*iter)->setEnabled(enabled);
 	}
 }
+
+#define ENSURE_APP_IS_IDLE() do \
+{ \
+	if(QApplication::activeModalWidget() || (!ui->buttonStart->isEnabled())) \
+	{ \
+		qWarning("Cannot perform action at this time!"); \
+		return; \
+	} \
+} \
+while(0)
 
 static const char HOMEPAGE_URL[] = "http://muldersoft.com/";
 
@@ -131,6 +142,9 @@ MainWindow::MainWindow(void)
 	ui->treeView->addActions(ui->menuEdit->actions());
 	ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
 	ENABLE_MENU(ui->menuEdit, false);
+
+	//Enable drag&drop support
+	setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow(void)
@@ -190,6 +204,42 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	QMainWindow::keyPressEvent(e);
 }
 
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+	if(ui->buttonStart->isEnabled())
+	{
+		QStringList formats = e->mimeData()->formats();
+	
+		if(formats.contains("application/x-qt-windows-mime;value=\"FileNameW\"", Qt::CaseInsensitive) && formats.contains("text/uri-list", Qt::CaseInsensitive))
+		{
+			e->acceptProposedAction();
+		}
+	}
+}
+
+void MainWindow::dropEvent(QDropEvent *e)
+{
+	if(ui->buttonStart->isEnabled())
+	{
+		m_droppedFolders.clear();
+		QList<QUrl> urls = e->mimeData()->urls();
+
+		for(QList<QUrl>::ConstIterator iter = urls.constBegin(); iter != urls.constEnd(); iter++)
+		{
+			QFileInfo item(iter->toLocalFile());
+			if(item.exists() && item.isDir())
+			{
+				m_droppedFolders << item.canonicalFilePath();
+			}
+		}
+
+		if(!m_droppedFolders.isEmpty())
+		{
+			QTimer::singleShot(0, this, SLOT(startScan()));
+		}
+	}
+}
+
 bool MainWindow::winEvent(MSG *message, long *result)
 {
 	return Taskbar::handleWinEvent(message, result);
@@ -201,7 +251,15 @@ bool MainWindow::winEvent(MSG *message, long *result)
 
 void MainWindow::startScan(void)
 {
+	ENSURE_APP_IS_IDLE();
+
 	DirectoriesDialog *directoriesDialog = new DirectoriesDialog(this);
+
+	if(!m_droppedFolders.isEmpty())
+	{
+		directoriesDialog->addDirectories(m_droppedFolders);
+		m_droppedFolders.clear();
+	}
 
 	if(directoriesDialog->exec() == QDialog::Accepted)
 	{
@@ -308,6 +366,8 @@ void MainWindow::fileComparatorProgressChanged(const int &progress)
 
 void MainWindow::itemActivated(const QModelIndex &index)
 {
+	ENSURE_APP_IS_IDLE();
+
 	const QString &filePath = m_model->getFilePath(index);
 	if(!filePath.isEmpty())
 	{
@@ -317,6 +377,8 @@ void MainWindow::itemActivated(const QModelIndex &index)
 
 void MainWindow::clearData(void)
 {
+	ENSURE_APP_IS_IDLE();
+
 	if(ui->treeView->model() || m_signCancelled->isVisible() || m_signCompleted->isVisible())
 	{
 		UNSET_MODEL(ui->treeView);
@@ -338,6 +400,8 @@ void MainWindow::clearData(void)
 
 void MainWindow::exportToFile(void)
 {
+	ENSURE_APP_IS_IDLE();
+
 	QMap<QString,int> filters;
 	filters.insert(tr("XML File (*.xml)"), DuplicatesModel::FORMAT_XML);
 	filters.insert(tr("INI File (*.ini)"), DuplicatesModel::FORMAT_INI);
@@ -360,6 +424,8 @@ void MainWindow::exportToFile(void)
 
 void MainWindow::copyToClipboard(void)
 {
+	ENSURE_APP_IS_IDLE();
+
 	QClipboard *clipboard = QApplication::clipboard();
 	clipboard->setText(m_model->toString());
 	QApplication::beep();
@@ -367,11 +433,14 @@ void MainWindow::copyToClipboard(void)
 
 void MainWindow::showHomepage(void)
 {
+	ENSURE_APP_IS_IDLE();
 	QDesktopServices::openUrl(QUrl(HOMEPAGE_URL));
 }
 
 void MainWindow::showAbout(void)
 {
+	ENSURE_APP_IS_IDLE();
+
 	QString text;
 	const QString tmplt = QString("<nobr><tt>%1</tt></nobr><br>");
 

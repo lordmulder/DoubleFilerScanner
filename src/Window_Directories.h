@@ -41,6 +41,7 @@ public:
 	virtual ~DirectoriesDialog(void);
 
 	QStringList getDirectories(void);
+	void addDirectories(const QStringList &directories);
 	bool getRecursive(void);
 
 private slots:
@@ -51,6 +52,8 @@ private slots:
 protected:
 	virtual void showEvent(QShowEvent *e);
 	virtual void resizeEvent(QResizeEvent *e);
+	virtual void dragEnterEvent(QDragEnterEvent *e);
+	virtual void dropEvent(QDropEvent *e);
 
 	QLabel *m_label;
 	QString m_lastPath;

@@ -62,6 +62,8 @@ protected:
 	virtual void resizeEvent(QResizeEvent *e);
 	virtual void showEvent(QShowEvent *e);
 	virtual void keyPressEvent(QKeyEvent *e);
+	virtual void dragEnterEvent(QDragEnterEvent *e);
+	virtual void dropEvent(QDropEvent *e);
 	virtual bool winEvent(MSG *message, long *result);
 
 	void centerWidget(QWidget *widget);
@@ -76,6 +78,7 @@ protected:
 	QLabel *m_signQuiescent;
 
 	volatile bool m_abortFlag;
+	QStringList m_droppedFolders;
 
 	DuplicatesModel *m_model;
 	DirectoryScanner *m_directoryScanner;

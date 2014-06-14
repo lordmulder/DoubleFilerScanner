@@ -31,6 +31,8 @@
 #include <QTimer>
 #include <QLabel>
 #include <QMessageBox>
+#include <QDropEvent>
+#include <QUrl>
 
 #include <cassert>
 
@@ -78,6 +80,9 @@ DirectoriesDialog::DirectoriesDialog(QWidget *const parent)
 	QPalette palette = m_label->palette();
 	palette.setColor(QPalette::WindowText, QColor(Qt::darkGray));
 	m_label->setPalette(palette);
+
+	//Enable drag&drop support
+	setAcceptDrops(true);
 }
 
 DirectoriesDialog::~DirectoriesDialog(void)
@@ -94,13 +99,47 @@ void DirectoriesDialog::showEvent(QShowEvent *e)
 {
 	QDialog::showEvent(e);
 	resizeEvent(NULL);
-	QTimer::singleShot(0, this, SLOT(addDirectory()));
+
+	if(ui->listWidget->count() < 1)
+	{
+		QTimer::singleShot(0, this, SLOT(addDirectory()));
+	}
 }
 
 void DirectoriesDialog::resizeEvent(QResizeEvent *e)
 {
 	QDialog::resizeEvent(e);
 	m_label->resize(ui->listWidget->viewport()->size());
+}
+
+void DirectoriesDialog::dragEnterEvent(QDragEnterEvent *e)
+{
+	QStringList formats = e->mimeData()->formats();
+	
+	if(formats.contains("application/x-qt-windows-mime;value=\"FileNameW\"", Qt::CaseInsensitive) && formats.contains("text/uri-list", Qt::CaseInsensitive))
+	{
+		e->acceptProposedAction();
+	}
+}
+
+void DirectoriesDialog::dropEvent(QDropEvent *e)
+{
+	QStringList droppedFolders;
+	QList<QUrl> urls = e->mimeData()->urls();
+
+	for(QList<QUrl>::ConstIterator iter = urls.constBegin(); iter != urls.constEnd(); iter++)
+	{
+		QFileInfo item(iter->toLocalFile());
+		if(item.exists() && item.isDir())
+		{
+			droppedFolders << item.canonicalFilePath();
+		}
+	}
+
+	if(!droppedFolders.isEmpty())
+	{
+		addDirectories(droppedFolders);
+	}
 }
 
 //===================================================================
@@ -122,7 +161,7 @@ void DirectoriesDialog::addDirectory(void)
 			}
 		}
 
-		QListWidgetItem *item = new QListWidgetItem(QIcon(":/res/Icon_Folder.png"), path, ui->listWidget);
+		QListWidgetItem *item = new QListWidgetItem(QIcon(":/res/Icon_Folder.png"), QDir::toNativeSeparators(path), ui->listWidget);
 		ui->listWidget->addItem(item);
 		
 		QDir lastPath(path);
@@ -162,6 +201,32 @@ QStringList DirectoriesDialog::getDirectories(void)
 	}
 	
 	return directories;
+}
+
+void DirectoriesDialog::addDirectories(const QStringList &directories)
+{
+	for(QStringList::ConstIterator iter = directories.constBegin(); iter != directories.constEnd(); iter++)
+	{
+		bool bSkipFolder = false;
+
+		for(int i = 0; i < ui->listWidget->count(); i++)
+		{
+			if(QDir::fromNativeSeparators(*iter).compare(QDir::fromNativeSeparators(ui->listWidget->item(i)->text()), Qt::CaseInsensitive) == 0)
+			{
+				bSkipFolder = true;
+				break;
+			}
+		}
+
+		if(!bSkipFolder)
+		{
+			QListWidgetItem *item = new QListWidgetItem(QIcon(":/res/Icon_Folder.png"), QDir::toNativeSeparators(*iter), ui->listWidget);
+			ui->listWidget->addItem(item);
+		}
+	}
+
+	ui->buttonOkay->setEnabled(ui->listWidget->count() > 0);
+	m_label->setVisible(ui->listWidget->count() < 1);
 }
 
 bool DirectoriesDialog::getRecursive(void)
