@@ -20,7 +20,7 @@ content are guaranteed to have the same SHA-1 digest, while files with
 differing content will have different SHA-1 values with very high certainty.
 
 All computed SHA-1 values are stored in a hash table, so collisions are found
-quick and we do *not* need to compare every digest to every other one. Also,
+quickly and we do NOT need to compare every digest to every other one. Also,
 the files are processed concurrently in multiple "worker" threads in order to
 parallelize and speed-up the SHA-1 computations on multi-core processors. On
 our test machine it took ~15 minutes to analyse all the ~260,000 files on the
