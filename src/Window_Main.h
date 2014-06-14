@@ -35,6 +35,7 @@ class DirectoryScanner;
 class FileComparator;
 class DuplicatesModel;
 class QModelIndex;
+class QElapsedTimer;
 
 //MainWindow class
 class MainWindow: public QMainWindow
@@ -71,15 +72,19 @@ protected:
 	void updateProgress(const int &progress);
 	void setButtonsEnabled(const bool &enabled);
 	void showSign(const int &id);
+	void handleCommandLineArgs(void);
 
 	QLabel *m_animator;
 	QMovie *m_movie;
+	QElapsedTimer *m_timer;
 
 	QLabel *m_signCompleted;
 	QLabel *m_signCancelled;
 	QLabel *m_signQuiescent;
 
 	volatile bool m_abortFlag;
+	volatile bool m_unattendedFlag;
+
 	QStringList m_droppedFolders;
 
 	DuplicatesModel *m_model;

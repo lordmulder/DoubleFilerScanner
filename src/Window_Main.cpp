@@ -41,6 +41,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include <cassert>
 
@@ -80,7 +81,8 @@ MainWindow::MainWindow(void)
 :
 	ui(new Ui::MainWindow())
 {
-	m_abortFlag = false;
+	m_abortFlag = true;
+	m_unattendedFlag = false;
 
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
@@ -143,6 +145,9 @@ MainWindow::MainWindow(void)
 	ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
 	ENABLE_MENU(ui->menuEdit, false);
 
+	//Create timer
+	m_timer = new QElapsedTimer();
+
 	//Enable drag&drop support
 	setAcceptDrops(true);
 }
@@ -159,6 +164,7 @@ MainWindow::~MainWindow(void)
 	MY_DELETE(m_signCompleted);
 	MY_DELETE(m_signCancelled);
 	MY_DELETE(m_signQuiescent);
+	MY_DELETE(m_timer);
 }
 
 //===================================================================
@@ -169,6 +175,7 @@ void MainWindow::showEvent(QShowEvent *e)
 {
 	QMainWindow::showEvent(e);
 	resizeEvent(NULL);
+	handleCommandLineArgs();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *e)
@@ -253,19 +260,36 @@ void MainWindow::startScan(void)
 {
 	ENSURE_APP_IS_IDLE();
 
-	DirectoriesDialog *directoriesDialog = new DirectoriesDialog(this);
+	bool recursive = true;
+	QStringList directories;
 
-	if(!m_droppedFolders.isEmpty())
+	if(m_unattendedFlag)
 	{
-		directoriesDialog->addDirectories(m_droppedFolders);
+		m_unattendedFlag = false;
+		directories << m_droppedFolders;
 		m_droppedFolders.clear();
 	}
-
-	if(directoriesDialog->exec() == QDialog::Accepted)
+	else
 	{
-		const bool recursive = directoriesDialog->getRecursive();
-		const QStringList directories = directoriesDialog->getDirectories();
+		DirectoriesDialog *directoriesDialog = new DirectoriesDialog(this);
 
+		if(!m_droppedFolders.isEmpty())
+		{
+			directoriesDialog->addDirectories(m_droppedFolders);
+			m_droppedFolders.clear();
+		}
+
+		if(directoriesDialog->exec() == QDialog::Accepted)
+		{
+			recursive = directoriesDialog->getRecursive();
+			directories << directoriesDialog->getDirectories();
+		}
+
+		MY_DELETE(directoriesDialog);
+	}
+
+	if(!directories.isEmpty())
+	{
 		setButtonsEnabled(false);
 		ENABLE_MENU(ui->menuEdit, false);
 		m_abortFlag = false;
@@ -279,9 +303,9 @@ void MainWindow::startScan(void)
 		m_directoryScanner->setRecursive(recursive);
 		m_directoryScanner->addDirectories(directories);
 		m_directoryScanner->start();
-	}
 
-	MY_DELETE(directoriesDialog);
+		m_timer->start();
+	}
 }
 
 void MainWindow::directoryScannerFinished(void)
@@ -290,6 +314,7 @@ void MainWindow::directoryScannerFinished(void)
 
 	if(m_abortFlag)
 	{
+		m_timer->invalidate();
 		QApplication::beep();
 		ui->label->setText(tr("The operation has been aborted by the user!"));
 		showSign(2);
@@ -309,6 +334,7 @@ void MainWindow::fileComparatorFinished(void)
 {
 	if(m_abortFlag)
 	{
+		m_timer->invalidate();
 		QApplication::beep();
 		ui->label->setText(tr("The operation has been aborted by the user!"));
 		showSign(2);
@@ -318,6 +344,13 @@ void MainWindow::fileComparatorFinished(void)
 	}
 	
 	m_abortFlag = true; /*to prevent an abort message after completion*/
+
+	if(m_timer->isValid())
+	{
+		const quint64 elapsed = m_timer->elapsed();
+		m_timer->invalidate();
+		qDebug("Operation took %.3f seconds to complete.\n", double(elapsed) / 1000.0);
+	}
 
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("Completed: %1 file(s) have been analyzed, %2 duplicate(s) have been identified.").arg(QString::number(files.count()), QString::number(m_model->duplicateCount())));
@@ -527,4 +560,34 @@ QLabel *MainWindow::makeLabel(QWidget *parent, const QString &fileName, const bo
 	}
 
 	return label;
+}
+
+void MainWindow::handleCommandLineArgs(void)
+{
+	m_droppedFolders.clear();
+	const QStringList args = QApplication::arguments();
+	bool appendNext = false;
+
+	for(QStringList::ConstIterator iter = args.constBegin(); iter != args.constEnd(); iter++)
+	{
+		if(appendNext)
+		{
+			QFileInfo folder(*iter);
+			if(folder.exists() && folder.isDir())
+			{
+				m_droppedFolders << folder.canonicalFilePath();
+			}
+			appendNext = false;
+		}
+		else if((*iter).compare("--scan", Qt::CaseInsensitive) == 0)
+		{
+			appendNext = true;
+		}
+	}
+
+	if(!m_droppedFolders.isEmpty())
+	{
+		m_unattendedFlag = true;
+		QTimer::singleShot(100, this, SLOT(startScan()));
+	}
 }
