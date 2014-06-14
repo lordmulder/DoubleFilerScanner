@@ -276,7 +276,7 @@
      <normaloff>:/res/Button_WebLink.png</normaloff>:/res/Button_WebLink.png</iconset>
    </property>
    <property name="text">
-    <string>Visit Official Web-Site</string>
+    <string>Official Web-Site</string>
    </property>
   </action>
  </widget>

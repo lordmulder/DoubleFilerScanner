@@ -33,6 +33,17 @@
 #include <Windows.h>
 #include <ShObjIdl.h>
 
+#define RELEASE(X) do \
+{ \
+	(X)->Release(); \
+	(X) = NULL; \
+} \
+while(0)
+
+//===================================================================
+// Taskbar Data
+//===================================================================
+
 class TaskbarData
 {
 	friend class Taskbar;
@@ -48,12 +59,12 @@ protected:
 	ITaskbarList3 *ptbl;
 };
 
-QMutex Taskbar::s_lock;
-TaskbarData *Taskbar::s_data = NULL;
-
 //===================================================================
 // Constructor & Destructor
 //===================================================================
+
+QMutex Taskbar::s_lock;
+TaskbarData *Taskbar::s_data = NULL;
 
 Taskbar::Taskbar(void)
 {
@@ -79,7 +90,7 @@ void Taskbar::init(void)
 		
 		if(s_data->winMsg == 0)
 		{
-			qWarning("RegisterWindowMessageW has failed!");
+			qWarning("RegisterWindowMessage() has failed!");
 		}
 	}
 }
@@ -92,8 +103,8 @@ void Taskbar::uninit(void)
 	{
 		if(s_data->ptbl)
 		{
-			s_data->ptbl->Release();
-			s_data->ptbl = NULL;
+			RELEASE(s_data->ptbl);
+			CoUninitialize();
 		}
 		MY_DELETE(s_data);
 	}
@@ -102,19 +113,20 @@ void Taskbar::uninit(void)
 bool Taskbar::handleWinEvent(void *message, long *result)
 {
 	QMutexLocker lock(&s_lock);
-	bool stopEvent = false;
 
 	if(s_data && (s_data->winMsg != 0))
 	{
 		if(((MSG*)message)->message == s_data->winMsg)
 		{
-			if(!s_data->ptbl) createInterface();
-			*result = (s_data->ptbl) ? S_OK : S_FALSE;
-			stopEvent = true;
+			if(!s_data->ptbl)
+			{
+				*result = createInterface() ? S_OK : S_FALSE;
+			}
+			return true;
 		}
 	}
 
-	return stopEvent;
+	return false;
 }
 
 bool Taskbar::setTaskbarState(QWidget *window, TaskbarState state)
@@ -175,29 +187,42 @@ void Taskbar::setOverlayIcon(QWidget *window, QIcon *icon)
 // Private Functions
 //===================================================================
 
-void Taskbar::createInterface(void)
+bool Taskbar::createInterface(void)
 {
 	if(s_data && (!s_data->ptbl))
 	{
-		ITaskbarList3 *ptbl = NULL;
-		const HRESULT hr = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&ptbl));
+		const HRESULT hrComInit = CoInitialize(NULL);
 
-		if(SUCCEEDED(hr))
+		if((hrComInit != S_OK) && (hrComInit != S_FALSE))
 		{
-			const HRESULT hr2 = ptbl->HrInit();
-			if(SUCCEEDED(hr2))
-			{
-				s_data->ptbl = ptbl;
-			}
-			else
-			{
-				ptbl->Release();
-				qWarning("ITaskbarList3::HrInit() has failed!");
-			}
+			qWarning("CoInitialize() has failed!");
+			return false;
 		}
-		else
+
+		ITaskbarList3 *tmp = NULL;
+		const HRESULT hrCreate = CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&tmp));
+
+		if(!SUCCEEDED(hrCreate))
 		{
-			qWarning("ITaskbarList3 could not be created!");
+			qWarning("ITaskbarList3 interface could not be created!");
+			CoUninitialize();
+			return false;
 		}
+
+		const HRESULT hrInitTaskbar = tmp->HrInit();
+
+		if(!SUCCEEDED(hrInitTaskbar))
+		{
+			qWarning("ITaskbarList3::HrInit() has failed!");
+			RELEASE(tmp);
+			CoUninitialize();
+			return false;
+		}
+
+		s_data->ptbl = tmp;
+		return true;
 	}
+
+	qWarning("Interface was already created!");
+	return false;
 }

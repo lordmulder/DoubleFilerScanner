@@ -54,7 +54,7 @@ public:
 	static void uninit(void);
 
 private:
-	static void createInterface(void);
+	static bool createInterface(void);
 	static QMutex s_lock;
 	static TaskbarData *s_data;
 };

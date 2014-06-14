@@ -60,7 +60,7 @@ static void my_signal_handler(int signal_num)
 static LONG WINAPI my_exception_handler(struct _EXCEPTION_POINTERS*)
 {
 	crashHandler("Unhandeled exception handler invoked, application will exit!");
-	//return LONG_MAX;
+	return LONG_MAX;
 }
 
 void initErrorHandlers()

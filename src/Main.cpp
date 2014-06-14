@@ -152,7 +152,7 @@ int main_ex(int argc, char* argv[])
 		fprintf(stderr, "\nGURU MEDITATION !!!\n\nUnhandeled unknown C++ exception error!\n\n");
 		crashHandler("Unhandeled unknown C++ exception, application will exit!");
 	}
-	//return EXIT_FAILURE;
+	return EXIT_FAILURE;
 }
 
 int main(int argc, char* argv[])

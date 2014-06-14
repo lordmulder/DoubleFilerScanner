@@ -385,7 +385,12 @@ void MainWindow::showAbout(void)
 	text += "<br>";
 	text += tmplt.arg(QString("Please check <a href=\"%1\">%1</a> for news and updates!").arg(HOMEPAGE_URL));
 
-	QMessageBox::information(this, tr("About..."), text);
+	QMessageBox msgBox(this);
+	msgBox.setWindowTitle(tr("About Double File Scanner"));
+	msgBox.setText(text);
+	msgBox.setIconPixmap(QPixmap(":/res/Logo.png"));
+	msgBox.exec();
+
 	QMessageBox::aboutQt(this);
 }
 
