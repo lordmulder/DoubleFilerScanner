@@ -68,7 +68,9 @@ protected:
 
 	void centerWidget(QWidget *widget);
 	QLabel *makeLabel(QWidget *parent, const QString &fileName, const bool &hidden = true);
+	void updateProgress(const int &progress);
 	void setButtonsEnabled(const bool &enabled);
+	void showSign(const int &id);
 
 	QLabel *m_animator;
 	QMovie *m_movie;

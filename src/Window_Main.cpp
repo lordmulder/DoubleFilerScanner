@@ -266,24 +266,15 @@ void MainWindow::startScan(void)
 		const bool recursive = directoriesDialog->getRecursive();
 		const QStringList directories = directoriesDialog->getDirectories();
 
-		m_abortFlag = false;
 		setButtonsEnabled(false);
-
-		ENABLE_MENU(ui->menuFile, false);
 		ENABLE_MENU(ui->menuEdit, false);
-		ENABLE_MENU(ui->menuHelp, false);
+		m_abortFlag = false;
 
 		UNSET_MODEL(ui->treeView);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
-	
-		m_signCompleted->hide();
-		m_signCancelled->hide();
-		m_signQuiescent->hide();
 
-		ui->progressBar->setValue(0);
-		ui->progressBar->setMaximum(0);
-
-		Taskbar::setTaskbarState(this, Taskbar::TaskbarIndeterminateState);
+		showSign(-1);
+		updateProgress(-1);
 
 		m_directoryScanner->setRecursive(recursive);
 		m_directoryScanner->addDirectories(directories);
@@ -295,23 +286,17 @@ void MainWindow::startScan(void)
 
 void MainWindow::directoryScannerFinished(void)
 {
-	ui->progressBar->setMaximum(100);
-	ui->progressBar->setValue(0);
+	updateProgress(0);
 
 	if(m_abortFlag)
 	{
 		QApplication::beep();
 		ui->label->setText(tr("The operation has been aborted by the user!"));
-		m_signCancelled->show();
+		showSign(2);
 		setButtonsEnabled(true);
-		ENABLE_MENU(ui->menuFile, true);
-		ENABLE_MENU(ui->menuHelp, true);
 		Taskbar::setTaskbarState(this, Taskbar::TaskbarErrorState);
 		return;
 	}
-	
-	Taskbar::setTaskbarState(this, Taskbar::TaskbarNormalState);
-	Taskbar::setTaskbarProgress(this, 0, 100);
 
 	const QStringList &files = m_directoryScanner->getFiles();
 	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
@@ -326,14 +311,12 @@ void MainWindow::fileComparatorFinished(void)
 	{
 		QApplication::beep();
 		ui->label->setText(tr("The operation has been aborted by the user!"));
-		m_signCancelled->show();
+		showSign(2);
 		setButtonsEnabled(true);
-		ENABLE_MENU(ui->menuFile, true);
-		ENABLE_MENU(ui->menuHelp, true);
 		Taskbar::setTaskbarState(this, Taskbar::TaskbarErrorState);
 		return;
 	}
-
+	
 	m_abortFlag = true; /*to prevent an abort message after completion*/
 
 	const QStringList &files = m_directoryScanner->getFiles();
@@ -347,20 +330,17 @@ void MainWindow::fileComparatorFinished(void)
 	}
 	else
 	{
-		m_signCompleted->show();
+		showSign(1);
 	}
 
 	setButtonsEnabled(true);
-	ENABLE_MENU(ui->menuFile, true);
-	ENABLE_MENU(ui->menuHelp, true);
-
 	QApplication::beep();
 	ui->treeView->expandAll();
 }
 
 void MainWindow::fileComparatorProgressChanged(const int &progress)
 {
-	ui->progressBar->setValue(progress);
+	updateProgress(progress);
 	Taskbar::setTaskbarProgress(this, progress, 100);
 }
 
@@ -385,14 +365,9 @@ void MainWindow::clearData(void)
 		ENABLE_MENU(ui->menuEdit, false);
 		m_model->clear();
 
-		ui->progressBar->setMaximum(100);
-		ui->progressBar->setValue(0);
-
+		updateProgress(0);
 		Taskbar::setTaskbarState(this, Taskbar::TaskbarNoState);
-
-		m_signCompleted->hide();
-		m_signCancelled->hide();
-		m_signQuiescent->show();
+		showSign(0);
 
 		ui->label->setText(tr("Cleared. Please click \"Start Scan\" in order to begin a new scan!"));
 	}
@@ -472,23 +447,46 @@ void MainWindow::setButtonsEnabled(const bool &enabled)
 	ui->buttonStart->setEnabled(enabled);
 	ui->buttonExit->setEnabled(enabled);
 	ui->buttonAbout->setEnabled(enabled);
-	
+	ui->menuBar->setEnabled(enabled);
+
 	if(!enabled)
 	{
 		m_animator->show();
 		m_movie->start();
-
+		
 		QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	}
 	else
 	{
 		m_movie->stop();
 		m_animator->hide();
-	
-		ui->progressBar->setMaximum(100);
 
 		QApplication::restoreOverrideCursor();
 	}
+}
+
+void MainWindow::updateProgress(const int &progress)
+{
+	if(progress >= 0)
+	{
+		ui->progressBar->setMaximum(100);
+		ui->progressBar->setValue(qMin(progress, 100));
+		Taskbar::setTaskbarState(this, Taskbar::TaskbarNormalState);
+		Taskbar::setTaskbarProgress(this, qMin(progress, 100), 100);
+	}
+	else
+	{
+		ui->progressBar->setMaximum(0);
+		ui->progressBar->setValue(0);
+		Taskbar::setTaskbarState(this, Taskbar::TaskbarIndeterminateState);
+	}
+}
+
+void MainWindow::showSign(const int &id)
+{
+	m_signQuiescent->setVisible(id == 0);
+	m_signCompleted->setVisible(id == 1);
+	m_signCancelled->setVisible(id == 2);
 }
 
 void MainWindow::centerWidget(QWidget *widget)

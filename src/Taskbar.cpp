@@ -132,7 +132,6 @@ bool Taskbar::handleWinEvent(void *message, long *result)
 bool Taskbar::setTaskbarState(QWidget *window, TaskbarState state)
 {
 	QMutexLocker lock(&s_lock);
-	bool result = false;
 	
 	if(s_data && s_data->ptbl && window)
 	{
@@ -157,10 +156,10 @@ bool Taskbar::setTaskbarState(QWidget *window, TaskbarState state)
 			break;
 		}
 
-		result = SUCCEEDED(hr);
+		return SUCCEEDED(hr);
 	}
 
-	return result;
+	return false;
 }
 
 void Taskbar::setTaskbarProgress(QWidget *window, unsigned __int64 currentValue, unsigned __int64 maximumValue)
