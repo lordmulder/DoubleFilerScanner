@@ -42,6 +42,7 @@
 #include <QUrl>
 #include <QTimer>
 #include <QElapsedTimer>
+#include <QInputDialog>
 
 #include <cassert>
 
@@ -105,17 +106,19 @@ MainWindow::MainWindow(void)
 	connect(ui->buttonExit,  SIGNAL(clicked()), this, SLOT(close()));
 
 	//Setup menu connections
-	connect(ui->actionStart,     SIGNAL(triggered()), this, SLOT(startScan()));
-	connect(ui->actionClear,   SIGNAL(triggered()), this, SLOT(clearData()));
-	connect(ui->actionExport,   SIGNAL(triggered()), this, SLOT(exportToFile()));
-	connect(ui->actionClipbrd,  SIGNAL(triggered()), this, SLOT(copyToClipboard()));
+	connect(ui->actionStart,    SIGNAL(triggered()), this, SLOT(startScan()));
+	connect(ui->actionClear,    SIGNAL(triggered()), this, SLOT(clearData()));
 	connect(ui->actionExit,     SIGNAL(triggered()), this, SLOT(close()));
+	connect(ui->actionGoto,     SIGNAL(triggered()), this, SLOT(gotoFile()));
+	connect(ui->actionRename,   SIGNAL(triggered()), this, SLOT(renameFile()));
+	connect(ui->actionDelete,   SIGNAL(triggered()), this, SLOT(deleteFile()));
+	connect(ui->actionClipbrd,  SIGNAL(triggered()), this, SLOT(copyToClipboard()));
+	connect(ui->actionExport,   SIGNAL(triggered()), this, SLOT(exportToFile()));
 	connect(ui->actionHomepage, SIGNAL(triggered()), this, SLOT(showHomepage()));
 	connect(ui->actionAbout,    SIGNAL(triggered()), this, SLOT(showAbout()));
 	
 	//Create model
 	m_model = new DuplicatesModel();
-	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(itemActivated(QModelIndex)));
 
 	//Create directory scanner
 	m_directoryScanner = new DirectoryScanner(&m_abortFlag);
@@ -129,6 +132,7 @@ MainWindow::MainWindow(void)
 	//Setup tree view
 	ui->treeView->setExpandsOnDoubleClick(false);
 	ui->treeView->setHeaderHidden(true);
+	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(gotoFile(QModelIndex)));
 
 	//Setup animator
 	m_movie = new QMovie(":/res/Spinner.gif");
@@ -377,14 +381,126 @@ void MainWindow::fileComparatorProgressChanged(const int &progress)
 	Taskbar::setTaskbarProgress(this, progress, 100);
 }
 
-void MainWindow::itemActivated(const QModelIndex &index)
+void MainWindow::gotoFile(void)
+{
+	ENSURE_APP_IS_IDLE();
+	QModelIndex selected = getSelectedItem();
+	
+	if(!selected.isValid())
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, no file is currently selected!"));
+		return;
+	}
+
+	gotoFile(selected);
+}
+
+void MainWindow::gotoFile(const QModelIndex &index)
 {
 	ENSURE_APP_IS_IDLE();
 
 	const QString &filePath = m_model->getFilePath(index);
 	if(!filePath.isEmpty())
 	{
-		shellExplore((const wchar_t*)QDir::toNativeSeparators(filePath).utf16());
+		if(QFileInfo(filePath).exists())
+		{
+			shellExplore((const wchar_t*)QDir::toNativeSeparators(filePath).utf16());
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Warning"), tr("Sorry, selected file no longer exists!"));
+		}
+	}
+	else
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, selected item doesn't look like a file!"));
+	}
+}
+
+void MainWindow::renameFile(void)
+{
+	ENSURE_APP_IS_IDLE();
+	QModelIndex selected = getSelectedItem();
+	
+	if(!selected.isValid())
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, no file is currently selected!"));
+		return;
+	}
+
+	renameFile(selected);
+}
+
+void MainWindow::renameFile(const QModelIndex &index)
+{
+	ENSURE_APP_IS_IDLE();
+
+	const QString &filePath = m_model->getFilePath(index);
+	if(!filePath.isEmpty())
+	{
+		if(QFileInfo(filePath).exists() && QFileInfo(filePath).isFile())
+		{
+			bool ok = false;
+			const QString targetName = QInputDialog::getText(this, tr("Rename File"), tr("Please enter new file name:"), QLineEdit::Normal, QFileInfo(filePath).fileName(), &ok);
+			if(ok && (!targetName.isEmpty()))
+			{
+				if(!m_model->renameFile(index, targetName))
+				{
+					QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to rename the selected file!"));
+				}
+			}
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Warning"), tr("Sorry, the selected file doesn't exist anymore!"));
+		}
+	}
+	else
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, selected item doesn't look like a file!"));
+	}
+}
+
+void MainWindow::deleteFile(void)
+{
+	ENSURE_APP_IS_IDLE();
+	QModelIndex selected = getSelectedItem();
+	
+	if(!selected.isValid())
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, no file is currently selected!"));
+		return;
+	}
+
+	deleteFile(selected);
+}
+
+void MainWindow::deleteFile(const QModelIndex &index)
+{
+	ENSURE_APP_IS_IDLE();
+
+	const QString &filePath = m_model->getFilePath(index);
+	if(!filePath.isEmpty())
+	{
+		if(QFileInfo(filePath).exists() && QFileInfo(filePath).isFile())
+		{
+			const QString text = QString("<nobr>%1</nobr><br><br><nobr><tt>%2</tt></nobr>").arg(tr("Do you really want to delete the selected file?"), QDir::toNativeSeparators(filePath));
+			if(QMessageBox::question(this, tr("Delete File"), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+			{
+				if(!m_model->deleteFile(index))
+				{
+					QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to delete the selected file!"));
+				}
+			}
+		}
+		else
+		{
+			QMessageBox::warning(this, tr("Warning"), tr("Sorry, the selected file doesn't exist anymore!"));
+		}
+	}
+	else
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, selected item doesn't look like a file!"));
 	}
 }
 
@@ -572,7 +688,7 @@ void MainWindow::handleCommandLineArgs(void)
 	{
 		if(appendNext)
 		{
-			QFileInfo folder(*iter);
+			QFileInfo folder(QDir::fromNativeSeparators(*iter));
 			if(folder.exists() && folder.isDir())
 			{
 				m_droppedFolders << folder.canonicalFilePath();
@@ -590,4 +706,18 @@ void MainWindow::handleCommandLineArgs(void)
 		m_unattendedFlag = true;
 		QTimer::singleShot(100, this, SLOT(startScan()));
 	}
+}
+
+QModelIndex MainWindow::getSelectedItem(void)
+{
+	if(QItemSelectionModel *model = ui->treeView->selectionModel())
+	{
+		QModelIndexList selected = ui->treeView->selectionModel()->selectedIndexes();
+		if(!selected.isEmpty())
+		{
+			return selected.first();
+		}
+	}
+
+	return QModelIndex();
 }

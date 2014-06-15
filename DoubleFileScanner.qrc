@@ -23,17 +23,21 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
   <qresource>
-    <file>res/Button_Accept.png</file>
     <file>res/Button_About.png</file>
+    <file>res/Button_Accept.png</file>
     <file>res/Button_Cancel.png</file>
     <file>res/Button_Clear.png</file>
     <file>res/Button_CopyToClipboard.png</file>
     <file>res/Button_Exit.png</file>
     <file>res/Button_Export.png</file>
+    <file>res/Button_FileDelete.png</file>
+    <file>res/Button_FileGoto.png</file>
+    <file>res/Button_FileRename.png</file>
     <file>res/Button_FolderAdd.png</file>
     <file>res/Button_FolderRemove.png</file>
     <file>res/Button_Start.png</file>
     <file>res/Button_WebLink.png</file>
+    <file>res/DoubleFileScanner.ico</file>
     <file>res/DoubleFileScanner.png</file>
     <file>res/Icon_Bullet.png</file>
     <file>res/Icon_Duplicate.png</file>

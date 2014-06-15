@@ -55,10 +55,14 @@ public:
 
 	unsigned int duplicateCount(void) const;
 	const QString &getFilePath(const QModelIndex &index) const;
-	void addDuplicate(const QByteArray &hash, const QStringList files);
-	bool exportToFile(const QString &outFile, const int &format);
 	QString toString(void);
+	
 	void clear(void);
+	void addDuplicate(const QByteArray &hash, const QStringList files);
+	bool renameFile(const QModelIndex &index, const QString &newFileName);
+	bool deleteFile(const QModelIndex &index);
+
+	bool exportToFile(const QString &outFile, const int &format);
 
 protected:
 	DuplicateItem *m_root;
@@ -72,4 +76,6 @@ protected:
 
 	bool exportToIni(const QString &outFile);
 	bool exportToXml(const QString &outFile);
+	
+	QString cleanFileName(const QString &fileName);
 };

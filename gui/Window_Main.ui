@@ -202,6 +202,10 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionGoto"/>
+    <addaction name="actionRename"/>
+    <addaction name="actionDelete"/>
+    <addaction name="separator"/>
     <addaction name="actionClipbrd"/>
     <addaction name="actionExport"/>
    </widget>
@@ -249,7 +253,7 @@
      <normaloff>:/res/Button_Export.png</normaloff>:/res/Button_Export.png</iconset>
    </property>
    <property name="text">
-    <string>Export Duplicates to File</string>
+    <string>Export Duplicates List</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -277,6 +281,33 @@
    </property>
    <property name="text">
     <string>Official Web-Site</string>
+   </property>
+  </action>
+  <action name="actionGoto">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_FileGoto.png</normaloff>:/res/Button_FileGoto.png</iconset>
+   </property>
+   <property name="text">
+    <string>Go to Selected File</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_FileDelete.png</normaloff>:/res/Button_FileDelete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete Selected File</string>
+   </property>
+  </action>
+  <action name="actionRename">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_FileRename.png</normaloff>:/res/Button_FileRename.png</iconset>
+   </property>
+   <property name="text">
+    <string>Rename Selected File</string>
    </property>
   </action>
  </widget>

@@ -51,7 +51,12 @@ private slots:
 	void directoryScannerFinished(void);
 	void fileComparatorProgressChanged(const int &progress);
 	void fileComparatorFinished(void);
-	void itemActivated(const QModelIndex &index);
+	void gotoFile(void);
+	void gotoFile(const QModelIndex &index);
+	void renameFile(void);
+	void renameFile(const QModelIndex &index);
+	void deleteFile(void);
+	void deleteFile(const QModelIndex &index);
 	void clearData(void);
 	void exportToFile(void);
 	void copyToClipboard(void);
@@ -73,6 +78,7 @@ protected:
 	void setButtonsEnabled(const bool &enabled);
 	void showSign(const int &id);
 	void handleCommandLineArgs(void);
+	QModelIndex getSelectedItem(void);
 
 	QLabel *m_animator;
 	QMovie *m_movie;
