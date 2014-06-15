@@ -402,14 +402,18 @@ bool DuplicatesModel::exportToFile(const QString &outFile, const int &format)
 bool DuplicatesModel::exportToIni(const QString &outFile)
 {
 	QSettings settings(outFile, QSettings::IniFormat);
-	settings.clear();
 	const int hashCount = m_root->childCount();
-	
-	if(settings.status() != QSettings::NoError)
+
+	settings.clear();
+
+	if((!settings.isWritable()) || (settings.status() != QSettings::NoError))
 	{
 		qWarning("Failed to open output file!");
 		return false;
 	}
+
+	settings.setValue("generator", tr("Document created with Double File Scanner v%1").arg(QString().sprintf("%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
+	settings.setValue("rights", tr("Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved."));
 
 	for(int i = 0; i < hashCount; i++)
 	{
@@ -426,6 +430,12 @@ bool DuplicatesModel::exportToIni(const QString &outFile)
 		}
 
 		settings.endGroup();
+	}
+
+	if((!settings.isWritable()) || (settings.status() != QSettings::NoError))
+	{
+		qWarning("Failed to write output file!");
+		return false;
 	}
 
 	return true;
@@ -446,6 +456,13 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 
 	stream.setAutoFormatting(true);
 	stream.writeStartDocument();
+
+	QString tmpl(" %1 ");
+	stream.writeComment(tmpl.arg(tr("=====================================================================")));
+	stream.writeComment(tmpl.arg(tr("Document created with Double File Scanner v%1").arg(QString().sprintf("%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH))));
+	stream.writeComment(tmpl.arg(tr("Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.")));
+	stream.writeComment(tmpl.arg(tr("=====================================================================")));
+
 	stream.writeStartElement("Duplicates");
 
 	for(int i = 0; i < hashCount; i++)
@@ -470,7 +487,14 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 	}
 
 	stream.writeEndElement();
-	file.close();
 	
+	if(stream.hasError())
+	{
+		qWarning("Failed to write output file!");
+		file.close();
+		return false;
+	}
+
+	file.close();
 	return true;
 }
