@@ -107,15 +107,19 @@ void FileComparator::run(void)
 	if(!(*m_abortFlag))
 	{
 		qDebug("\n[Searching Duplicates]");
-		quint32 duplicateCount = 0;
 
-		const QList<QByteArray> keys = m_hashes.uniqueKeys();
+		quint32 duplicateCount = 0;
+		QList<QByteArray> keys = m_hashes.uniqueKeys();
+		qSort(keys);
+
 		for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
 		{
 			qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
 			if(m_hashes.count(*iter) > 1)
 			{
-				emit duplicateFound((*iter), m_hashes.values(*iter));
+				QStringList values = m_hashes.values(*iter);
+				values.sort();
+				emit duplicateFound((*iter), values);
 				duplicateCount++;
 			}
 		}

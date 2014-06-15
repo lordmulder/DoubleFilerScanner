@@ -144,6 +144,7 @@ MainWindow::MainWindow(void)
 	m_movie = new QMovie(":/res/Spinner.gif");
 	m_animator = makeLabel(ui->treeView, ":/res/Spinner.gif");
 	m_animator->setMovie(m_movie);
+	m_animator->setToolTip(tr("You can press ESC to abort a running operation..."));
 
 	//Create signs
 	m_signQuiescent = makeLabel(ui->treeView, ":/res/Sign_Clocks.png", 0);
