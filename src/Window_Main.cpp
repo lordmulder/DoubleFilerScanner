@@ -458,10 +458,12 @@ void MainWindow::renameFile(const QModelIndex &index)
 				{
 					break; /*file name is valid*/
 				}
+				if(targetName.isEmpty())
+				{
+					targetName = QFileInfo(filePath).fileName();
+				}
 				QApplication::beep();
 			}
-			
-			qWarning("Going to rename to: %s", targetName.toUtf8().constData());
 
 			if(!m_model->renameFile(index, targetName))
 			{
@@ -500,20 +502,21 @@ void MainWindow::deleteFile(const QModelIndex &index)
 	const QString &filePath = m_model->getFilePath(index);
 	if(!filePath.isEmpty())
 	{
-		if(QFileInfo(filePath).exists() && QFileInfo(filePath).isFile())
+		const QString text = QString("<nobr>%1</nobr><br><br><nobr><tt>%2</tt></nobr>").arg(tr("Do you really want to permanently delete the selected file?"), QDir::toNativeSeparators(filePath));
+		if(QMessageBox::question(this, tr("Delete File"), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 		{
-			const QString text = QString("<nobr>%1</nobr><br><br><nobr><tt>%2</tt></nobr>").arg(tr("Do you really want to permanently delete the selected file?"), QDir::toNativeSeparators(filePath));
-			if(QMessageBox::question(this, tr("Delete File"), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+			if(m_model->duplicateFileCount(index) < 2)
 			{
-				if(!m_model->deleteFile(index))
+				if(QMessageBox::warning(this, tr("Delete File"), tr("This file has no more duplicates left! Delete anyway?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
 				{
-					QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to delete the selected file!"));
+					return;
 				}
 			}
-		}
-		else
-		{
-			QMessageBox::warning(this, tr("Warning"), tr("Sorry, the selected file doesn't exist anymore!"));
+
+			if(!m_model->deleteFile(index))
+			{
+				QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to delete the selected file!"));
+			}
 		}
 	}
 	else

@@ -53,6 +53,7 @@ public:
 	exportFormat_t;
 
 	unsigned int duplicateCount(void) const;
+	unsigned int duplicateFileCount(const QModelIndex &index) const;
 	const QString &getFilePath(const QModelIndex &index) const;
 	QString toString(void);
 	

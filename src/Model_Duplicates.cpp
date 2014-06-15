@@ -218,6 +218,25 @@ unsigned int DuplicatesModel::duplicateCount(void) const
 	return m_root->childCount();
 }
 
+unsigned int DuplicatesModel::duplicateFileCount(const QModelIndex &index) const
+{
+	if(index.isValid())
+	{
+		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
+		{
+			if(currentFile->isFile())
+			{
+				if(DuplicateItem *parent = currentFile->parent())
+				{
+					return parent->childCount();
+				}
+			}
+		}
+	}
+	
+	return 0;
+}
+
 const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
 {
 	if(index.isValid())
@@ -292,8 +311,23 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 				const QString oldFilePath = currentFile->text();
 				if(QFileInfo(oldFilePath).exists() && QFileInfo(oldFilePath).isFile())
 				{
-					const QString newFilePath = QString("%1/%2").arg(QFileInfo(oldFilePath).absolutePath(), newFileName);
-					if(QFile::rename(currentFile->text(), newFilePath))
+					QString newFilePath = QString("%1/%2").arg(QFileInfo(oldFilePath).absolutePath(), newFileName);
+					if(oldFilePath.compare(newFilePath, Qt::CaseInsensitive) == 0)
+					{
+						return true; /*no need to rename*/
+					}
+					if(QFileInfo(newFilePath).exists())
+					{
+						const QString suffix   = QFileInfo(newFilePath).suffix();
+						const QString baseName = QFileInfo(newFilePath).completeBaseName();
+						const QString path     = QFileInfo(newFilePath).absolutePath();
+						for(int n = 2; QFileInfo(newFilePath).exists(); n++)
+						{
+							newFilePath = QString("%1/%2 (%3).%4").arg(path, baseName, QString::number(n), suffix);
+							if(n > SHRT_MAX) return false;
+						}
+					}
+					if(QFile::rename(oldFilePath, newFilePath))
 					{
 						currentFile->setText(newFilePath);
 						emit dataChanged(index, index);
@@ -327,6 +361,16 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 							endRemoveRows();
 						}
 						return true;
+					}
+				}
+				else
+				{
+					//file no longer exists -> remove from model!
+					if(DuplicateItem *parentItem = currentFile->parent())
+					{
+						beginRemoveRows(parent(index), index.row(), index.row());
+						parentItem->removeChild(currentFile);
+						endRemoveRows();
 					}
 				}
 			}
