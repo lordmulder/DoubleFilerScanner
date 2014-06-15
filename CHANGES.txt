@@ -11,4 +11,5 @@ Version 2.00 [2014-05-14]
 Version 2.01 [2014-05-16]
 - Fixed Windows XP compatibility
 - Added commands to delete or rename a duplicate file
+- Improved sorting of the results
 - Various minor fixes and improvements

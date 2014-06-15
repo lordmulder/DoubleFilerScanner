@@ -38,6 +38,11 @@
 static const quint64 MAX_ENQUEUED_TASKS = 128;
 static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 
+static bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
+{
+	return s1.toLower() < s2.toLower();
+}
+
 //=======================================================================================
 // File Comparator
 //=======================================================================================
@@ -118,7 +123,7 @@ void FileComparator::run(void)
 			if(m_hashes.count(*iter) > 1)
 			{
 				QStringList values = m_hashes.values(*iter);
-				values.sort();
+				qSort(values.begin(), values.end(), caseInsensitiveLessThan);
 				emit duplicateFound((*iter), values);
 				duplicateCount++;
 			}
