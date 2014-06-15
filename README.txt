@@ -71,9 +71,11 @@ while the Double File Scanner is running. But don't forget to re-enable it!
 ------------------------------------------------------------------------------
 
 The following command-line options are available:
+  --console           Enable the debug console
+  --scan <directory>  Scan the specified directory, can be used multiple times
 
---console            Enable the debug console
---scan <directory>   Scan the specified directory, can be used multiple times
+List of influential environment variables:
+  DBLSCAN_THREADS     Set the number of worker threads (default: auto detect)
 
 
 E.O.F.
