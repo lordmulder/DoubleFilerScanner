@@ -42,9 +42,8 @@ static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 // File Comparator
 //=======================================================================================
 
-FileComparator::FileComparator(DuplicatesModel *model, volatile bool *abortFlag)
+FileComparator::FileComparator(volatile bool *abortFlag)
 :
-	m_model(model),
 	m_abortFlag(abortFlag)
 {
 	m_pendingTasks = 0;
@@ -68,7 +67,6 @@ void FileComparator::run(void)
 
 	m_hashes.clear();
 	m_pendingTasks = 0;
-	m_model->clear();
 
 	m_completedFileCount = 0;
 	m_totalFileCount = m_files.count();
@@ -110,7 +108,7 @@ void FileComparator::run(void)
 			qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
 			if(m_hashes.count(*iter) > 1)
 			{
-				m_model->addDuplicate((*iter), m_hashes.values(*iter));
+				emit duplicateFound((*iter), m_hashes.values(*iter));
 				duplicateCount++;
 			}
 		}

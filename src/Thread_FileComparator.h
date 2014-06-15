@@ -60,7 +60,7 @@ class FileComparator : public QThread
 	Q_OBJECT
 
 public:
-	FileComparator(DuplicatesModel *model, volatile bool *abortFlag);
+	FileComparator(volatile bool *abortFlag);
 	virtual ~FileComparator(void);
 
 	void addFiles(const QStringList &files);
@@ -70,13 +70,13 @@ private slots:
 
 signals:
 	void progressChanged(const int &progress);
+	void duplicateFound(const QByteArray &hash, const QStringList &path);
 
 protected:
 	virtual void run(void);
 	void scanNextFile(const QString path);
 
 	QThreadPool *m_pool;
-	DuplicatesModel *const m_model;
 
 	QQueue<QString> m_files;
 	QHash<QByteArray, QString> m_hashes;

@@ -22,7 +22,6 @@
 
 #include "Model_Duplicates.h"
 
-#include <QReadWriteLock>
 #include <QFont>
 #include <QIcon>
 #include <QDir>
@@ -30,6 +29,7 @@
 #include <QXmlStreamWriter>
 
 #include "Config.h"
+#include "System.h"
 
 static const QString EMPTY_STRING;
 
@@ -141,8 +141,6 @@ DuplicatesModel::~DuplicatesModel(void)
 
 QModelIndex DuplicatesModel::index(int row, int column, const QModelIndex &parent) const
 {
-	QReadLocker readLock(&m_lock);
-
 	DuplicateItem *parentItem = m_root;
 	if(parent.isValid() && parent.internalPointer())
 	{
@@ -159,8 +157,6 @@ QModelIndex DuplicatesModel::index(int row, int column, const QModelIndex &paren
 
 QModelIndex DuplicatesModel::parent(const QModelIndex &index) const
 {
-	QReadLocker readLock(&m_lock);
-
 	DuplicateItem *item = m_root;
 	if(index.isValid() && index.internalPointer())
 	{
@@ -178,8 +174,6 @@ QModelIndex DuplicatesModel::parent(const QModelIndex &index) const
 
 int DuplicatesModel::rowCount(const QModelIndex &parent) const
 {
-	QReadLocker readLock(&m_lock);
-
 	DuplicateItem *item = m_root;
 	if(parent.isValid() && parent.internalPointer())
 	{
@@ -196,8 +190,6 @@ int DuplicatesModel::columnCount(const QModelIndex&) const
 
 QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 {
-	QReadLocker readLock(&m_lock);
-
 	DuplicateItem *item = m_root;
 	if(index.isValid() && index.internalPointer())
 	{
@@ -223,7 +215,6 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 
 unsigned int DuplicatesModel::duplicateCount(void) const
 {
-	QReadLocker readLock(&m_lock);
 	return m_root->childCount();
 }
 
@@ -272,17 +263,14 @@ QString DuplicatesModel::toString(void)
 
 void DuplicatesModel::clear(void)
 {
-	QWriteLocker writeLock(&m_lock);
-
 	beginResetModel();
 	m_root->removeAllChilderen();
 	endResetModel();
 }
 
-void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList files)
+void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList &files)
 {
-	QWriteLocker writeLock(&m_lock);
-	beginResetModel();
+	beginInsertRows(QModelIndex(), m_root->childCount(), m_root->childCount());
 
 	DuplicateItem *currentKey = new DuplicateItem(m_root, hash.toHex().constData());
 	for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
@@ -290,14 +278,11 @@ void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList fil
 		new DuplicateItem(currentKey, (*iterFile), true);
 	}
 
-	writeLock.unlock();
-	endResetModel();
+	endInsertRows();
 }
 
 bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFileName)
 {
-	QWriteLocker writeLock(&m_lock);
-
 	if(index.isValid())
 	{
 		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
@@ -311,7 +296,6 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 					if(QFile::rename(currentFile->text(), newFilePath))
 					{
 						currentFile->setText(newFilePath);
-						writeLock.unlock();
 						emit dataChanged(index, index);
 						return true;
 					}
@@ -325,8 +309,6 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 
 bool DuplicatesModel::deleteFile(const QModelIndex &index)
 {
-	QWriteLocker writeLock(&m_lock);
-
 	if(index.isValid())
 	{
 		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
@@ -342,7 +324,6 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 						{
 							beginRemoveRows(parent(index), index.row(), index.row());
 							parentItem->removeChild(currentFile);
-							writeLock.unlock();
 							endRemoveRows();
 						}
 						return true;
@@ -361,8 +342,6 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 
 bool DuplicatesModel::exportToFile(const QString &outFile, const int &format)
 {
-	QReadLocker readLock(&m_lock);
-
 	switch(format)
 	{
 	case FORMAT_INI:

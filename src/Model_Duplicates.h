@@ -24,7 +24,6 @@
 
 #include <QAbstractItemModel>
 #include <QStringList>
-#include <QReadwriteLock>
 
 class DuplicateItem;
 class QFile;
@@ -58,11 +57,13 @@ public:
 	QString toString(void);
 	
 	void clear(void);
-	void addDuplicate(const QByteArray &hash, const QStringList files);
 	bool renameFile(const QModelIndex &index, const QString &newFileName);
 	bool deleteFile(const QModelIndex &index);
 
 	bool exportToFile(const QString &outFile, const int &format);
+
+public slots:
+	void addDuplicate(const QByteArray &hash, const QStringList &files);
 
 protected:
 	DuplicateItem *m_root;
@@ -71,8 +72,6 @@ protected:
 	QIcon *m_bulIcon;
 	QFont *m_fontDflt;
 	QFont *m_fontBold;
-	
-	mutable QReadWriteLock m_lock;
 
 	bool exportToIni(const QString &outFile);
 	bool exportToXml(const QString &outFile);

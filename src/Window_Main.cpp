@@ -126,9 +126,10 @@ MainWindow::MainWindow(void)
 	connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
 
 	//Create file comparator
-	m_fileComparator = new FileComparator(m_model, &m_abortFlag);
+	m_fileComparator = new FileComparator(&m_abortFlag);
 	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
+	connect(m_fileComparator, SIGNAL(duplicateFound(const QByteArray, const QStringList)), m_model, SLOT(addDuplicate(const QByteArray, const QStringList)), Qt::BlockingQueuedConnection);
 
 	//Setup tree view
 	ui->treeView->setExpandsOnDoubleClick(false);
@@ -301,6 +302,7 @@ void MainWindow::startScan(void)
 
 		UNSET_MODEL(ui->treeView);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
+		m_model->clear();
 
 		showSign(-1);
 		updateProgress(-1);
