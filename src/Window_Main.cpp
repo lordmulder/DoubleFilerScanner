@@ -43,6 +43,7 @@
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QInputDialog>
+#include <QDateTime>
 
 #include <cassert>
 
@@ -440,14 +441,27 @@ void MainWindow::renameFile(const QModelIndex &index)
 	{
 		if(QFileInfo(filePath).exists() && QFileInfo(filePath).isFile())
 		{
-			bool ok = false;
-			const QString targetName = QInputDialog::getText(this, tr("Rename File"), tr("Please enter new file name:"), QLineEdit::Normal, QFileInfo(filePath).fileName(), &ok);
-			if(ok && (!targetName.isEmpty()))
+			QString targetName = QFileInfo(filePath).fileName();
+			
+			forever
 			{
-				if(!m_model->renameFile(index, targetName))
+				bool ok = false;
+				const QString temp = QInputDialog::getText(this, tr("Rename File"), tr("Please enter new file name:").leftJustified(128), QLineEdit::Normal, targetName, &ok);
+				if(!ok)
 				{
-					QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to rename the selected file!"));
+					return; /*aborted by user*/
 				}
+				targetName = cleanFileName(temp.simplified());
+				if((!targetName.isEmpty()) && (targetName.compare(temp) == 0))
+				{
+					break; /*file name is valid*/
+				}
+				QApplication::beep();
+			}
+			
+			if(!m_model->renameFile(index, targetName))
+			{
+				QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to rename the selected file!"));
 			}
 		}
 		else
@@ -484,7 +498,7 @@ void MainWindow::deleteFile(const QModelIndex &index)
 	{
 		if(QFileInfo(filePath).exists() && QFileInfo(filePath).isFile())
 		{
-			const QString text = QString("<nobr>%1</nobr><br><br><nobr><tt>%2</tt></nobr>").arg(tr("Do you really want to delete the selected file?"), QDir::toNativeSeparators(filePath));
+			const QString text = QString("<nobr>%1</nobr><br><br><nobr><tt>%2</tt></nobr>").arg(tr("Do you really want to permanently delete the selected file?"), QDir::toNativeSeparators(filePath));
 			if(QMessageBox::question(this, tr("Delete File"), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 			{
 				if(!m_model->deleteFile(index))
@@ -564,27 +578,49 @@ void MainWindow::showHomepage(void)
 void MainWindow::showAbout(void)
 {
 	ENSURE_APP_IS_IDLE();
+	const int year = qMax(QString::fromLatin1(&DOUBLESCANNER_BUILD_DATE[7]).toInt(), QDateTime::currentDateTime().date().year());
 
 	QString text;
-	const QString tmplt = QString("<nobr><tt>%1</tt></nobr><br>");
+	const QString tmpl1 = QString("<nobr><b><tt>%1</tt></b></nobr><br>");
+	const QString tmpl2 = QString("<nobr><tt>%1</tt></nobr><br>");
 
-	text += tmplt.arg(QString().sprintf("<b>Double File Scanner, Version %u.%02u-%u</b>", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH));
-	text += tmplt.arg("Copyright (c) 2014 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.");
-	text += tmplt.arg(QString().sprintf("Built on %s at %s with %s for Win-%s.\n", DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH));
+	text += tmpl1.arg(tr("<b>Double File Scanner, Version %1</b>").arg(QString().sprintf("%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
+	text += tmpl1.arg(tr("<b>Copyright (c) %1 LoRd_MuldeR &lt;mulder2@gmx.de&gt;. Some rights reserved.</b>").arg((year > 2014) ? QString().sprintf("%02d-%02d", 2014, year) : QString::number(2014)));
+	text += tmpl1.arg(tr("<b>Built on %1 at %2 with %3 for Win-%4.</b>").arg(DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH));
+	text += "<hr><br>";
+	text += tmpl2.arg("This program is free software; you can redistribute it and/or");
+	text += tmpl2.arg("modify it under the terms of the GNU General Public License");
+	text += tmpl2.arg("as published by the Free Software Foundation; either version 2");
+	text += tmpl2.arg("of the License, or (at your option) any later version.");
 	text += "<br>";
-	text += tmplt.arg("This program is free software: you can redistribute it and/or modify");
-	text += tmplt.arg("it under the terms of the GNU General Public License <http://www.gnu.org/>.");
-	text += tmplt.arg("Note that this program is distributed with ABSOLUTELY NO WARRANTY.\n");
+	text += tmpl2.arg("This program is distributed in the hope that it will be useful,");
+	text += tmpl2.arg("but WITHOUT ANY WARRANTY; without even the implied warranty of");
+	text += tmpl2.arg("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+	text += tmpl2.arg("GNU General Public License for more details.");
 	text += "<br>";
-	text += tmplt.arg(QString("Please check <a href=\"%1\">%1</a> for news and updates!").arg(HOMEPAGE_URL));
+	text += tmpl2.arg("You should have received a copy of the GNU General Public License");
+	text += tmpl2.arg("along with this program; if not, write to the Free Software");
+	text += tmpl2.arg("Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.");
+	text += "<hr><br>";
+	text += tmpl2.arg(tr("Please remember to check <a href=\"%1\">%1</a> for news and updates!").arg(HOMEPAGE_URL));
 
 	QMessageBox msgBox(this);
 	msgBox.setWindowTitle(tr("About Double File Scanner"));
 	msgBox.setText(text);
 	msgBox.setIconPixmap(QPixmap(":/res/Logo.png"));
-	msgBox.exec();
 
-	QMessageBox::aboutQt(this);
+	QAbstractButton *btnAccept = msgBox.addButton(tr("About Qt"), QMessageBox::AcceptRole);
+	QAbstractButton *btnCancel = msgBox.addButton(tr("Discard"),  QMessageBox::RejectRole);
+	btnAccept->setMinimumWidth(90);
+	btnCancel->setMinimumWidth(90);
+	btnAccept->setIcon(QIcon(":/res/Button_About.png"));
+	btnCancel->setIcon(QIcon(":/res/Button_Cancel.png"));
+
+	msgBox.exec();
+	if(msgBox.clickedButton() == btnAccept)
+	{
+		QMessageBox::aboutQt(this);
+	}
 }
 
 //===================================================================
@@ -720,4 +756,10 @@ QModelIndex MainWindow::getSelectedItem(void)
 	}
 
 	return QModelIndex();
+}
+
+QString MainWindow::cleanFileName(const QString &fileName)
+{
+	QRegExp invalidChars("(\\\\|/|:|\\*|\\?|\"|<|>|\\|)");
+	return QString(fileName).replace(invalidChars, "_");
 }

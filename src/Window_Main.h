@@ -79,6 +79,8 @@ protected:
 	void showSign(const int &id);
 	void handleCommandLineArgs(void);
 	QModelIndex getSelectedItem(void);
+	
+	static QString cleanFileName(const QString &fileName);
 
 	QLabel *m_animator;
 	QMovie *m_movie;
