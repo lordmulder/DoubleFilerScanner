@@ -194,36 +194,33 @@ DirectoryScannerTask::~DirectoryScannerTask(void)
 
 void DirectoryScannerTask::run(void)
 {
-	QStringList files, dirs;
+	qDebug("%s", m_directory.toUtf8().constData());
 
-	if(*m_abortFlag)
+	QStringList files, dirs;
+	QFileInfo dirInfo(m_directory);
+	
+	if((*m_abortFlag) || (!(dirInfo.exists() && dirInfo.isDir())))
 	{
 		emit directoryAnalyzed(&files, &dirs);
 		return;
 	}
 
-	qDebug("%s", m_directory.toUtf8().constData());
-	QDirIterator iter(m_directory);
+	QDirIterator iter(m_directory, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden, QDirIterator::NoIteratorFlags);
 
 	while(iter.hasNext() && (!(*m_abortFlag)))
 	{
 		const QString path = iter.next();
-		const QString name = iter.fileName();
-		
-		if((name.compare(".", Qt::CaseInsensitive) != 0) && (name.compare("..", Qt::CaseInsensitive) != 0))
-		{
-			const QFileInfo info = iter.fileInfo();
+		const QFileInfo info = iter.fileInfo();
 
-			if(info.exists())
+		if(info.exists())
+		{
+			if(info.isFile())
 			{
-				if(info.isFile())
-				{
-					files << info.canonicalFilePath();
-				}
-				else if(info.isDir())
-				{
-					dirs << info.canonicalFilePath();
-				}
+				files << info.canonicalFilePath();
+			}
+			else if(info.isDir())
+			{
+				dirs << info.canonicalFilePath();
 			}
 		}
 	}
