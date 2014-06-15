@@ -76,6 +76,4 @@ protected:
 
 	bool exportToIni(const QString &outFile);
 	bool exportToXml(const QString &outFile);
-	
-	QString cleanFileName(const QString &fileName);
 };

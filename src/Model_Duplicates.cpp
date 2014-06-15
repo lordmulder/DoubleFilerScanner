@@ -294,6 +294,8 @@ void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList fil
 
 bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFileName)
 {
+	QWriteLocker writeLock(&m_lock);
+
 	if(index.isValid())
 	{
 		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
@@ -303,7 +305,7 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 				const QString oldFilePath = currentFile->text();
 				if(QFileInfo(oldFilePath).exists() && QFileInfo(oldFilePath).isFile())
 				{
-					const QString newFilePath = QString("%1/%2").arg(QFileInfo(oldFilePath).absolutePath(), cleanFileName(newFileName));
+					const QString newFilePath = QString("%1/%2").arg(QFileInfo(oldFilePath).absolutePath(), newFileName);
 					if(QFile::rename(currentFile->text(), newFilePath))
 					{
 						currentFile->setText(newFilePath);
@@ -320,6 +322,8 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 
 bool DuplicatesModel::deleteFile(const QModelIndex &index)
 {
+	QWriteLocker writeLock(&m_lock);
+
 	if(index.isValid())
 	{
 		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
@@ -353,6 +357,8 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 
 bool DuplicatesModel::exportToFile(const QString &outFile, const int &format)
 {
+	QReadLocker readLock(&m_lock);
+
 	switch(format)
 	{
 	case FORMAT_INI:
@@ -440,14 +446,4 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 	file.close();
 	
 	return true;
-}
-
-//===================================================================
-// Helper Functions
-//===================================================================
-
-QString DuplicatesModel::cleanFileName(const QString &fileName)
-{
-	QRegExp invalidChars("(\\\\|/|:|\\*|\\?|\"|<|>|\\|)");
-	return QString(fileName).replace(invalidChars, "_");
 }
