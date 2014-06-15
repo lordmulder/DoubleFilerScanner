@@ -1,9 +1,19 @@
 Double File Scanner
 Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License .
-Note that this program is distributed with ABSOLUTELY NO WARRANTY. 
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 Please check http://muldersoft.com/ for news and updates!
 
@@ -30,7 +40,24 @@ The list of identified duplicates can be exported to the XML and INI formats.
 
 
 ------------------------------------------------------------------------------
-2. Anti-Virus Warning
+2. Platform Support
+------------------------------------------------------------------------------
+
+The following platforms are supported:
+- Windows 8 and 8.1, 32-Bit and 64-Bit versions
+- Windows 7, 32-Bit and 64-Bit versions
+- Windows XP, Service Pack 3 is required!
+
+Platforms that should work too, but are not tested extensively:
+- Windows Vista, 32-Bit and 64-Bit versions
+- Windows XP Professional x64 Edition, Service Pack 2 is required!
+
+Download Service Pack 3 for Windows XP here:
+http://www.microsoft.com/en-us/download/details.aspx?id=24
+
+
+------------------------------------------------------------------------------
+3. Anti-Virus Warning
 ------------------------------------------------------------------------------
 
 Anti-Virus programs can interfere with the Double File Scanner software and
@@ -40,7 +67,7 @@ while the Double File Scanner is running. But don't forget to re-enable it!
 
 
 ------------------------------------------------------------------------------
-3. Command-Line Options
+4. Command-Line Options
 ------------------------------------------------------------------------------
 
 The following command-line options are available:
