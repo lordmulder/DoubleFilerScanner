@@ -42,7 +42,7 @@ static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 // File Comparator
 //=======================================================================================
 
-FileComparator::FileComparator(volatile bool *abortFlag)
+FileComparator::FileComparator(volatile bool *abortFlag, const int &threadCount)
 :
 	m_abortFlag(abortFlag)
 {
@@ -52,6 +52,13 @@ FileComparator::FileComparator(volatile bool *abortFlag)
 	m_completedFileCount = 0;
 	m_totalFileCount = m_files.count();
 	m_progressValue = -1;
+
+	if(threadCount > 0)
+	{
+		m_pool->setMaxThreadCount(qBound(1, threadCount, 64));
+	}
+
+	//qDebug("Using %d worker threads.", m_pool->maxThreadCount());
 }
 
 FileComparator::~FileComparator(void)

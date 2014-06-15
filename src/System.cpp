@@ -82,7 +82,7 @@ void initConsole(void)
 {
 	while(_InterlockedExchange(&g_consoleLock, 1L) != 0L)
 	{
-		Sleep(0);
+		Sleep(1);
 	}
 
 	if((g_hConsole != NULL) && (g_hConsole != INVALID_HANDLE_VALUE))
@@ -145,7 +145,7 @@ void printConsole(const char* text, const int &logLevel)
 
 	while(_InterlockedExchange(&g_consoleLock, 1L) != 0L)
 	{
-		Sleep(0);
+		Sleep(1);
 	}
 
 	if((g_hConsole == NULL) || (g_hConsole == INVALID_HANDLE_VALUE))
@@ -232,4 +232,15 @@ void changeWindowIcon(QWidget *window, const QIcon &icon, const bool bIsBigIcon)
 			SendMessage(window->winId(), WM_SETICON, (bIsBigIcon ? ICON_BIG : ICON_SMALL), LPARAM(hIcon));
 		}
 	}
+}
+
+QString getEnvString(const QString &name)
+{
+	wchar_t buffer[512];
+	DWORD ret = GetEnvironmentVariableW((const wchar_t*)name.utf16(), buffer, 512);
+	if((ret > 0) && (ret < 512))
+	{
+		return QString::fromUtf16((const ushort*)buffer);
+	}
+	return QString();
 }

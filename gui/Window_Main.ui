@@ -202,6 +202,8 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
     <addaction name="actionGoto"/>
     <addaction name="actionRename"/>
     <addaction name="actionDelete"/>
@@ -226,7 +228,7 @@
      <normaloff>:/res/Button_Start.png</normaloff>:/res/Button_Start.png</iconset>
    </property>
    <property name="text">
-    <string>Start Scan</string>
+    <string>Start New Scan</string>
    </property>
   </action>
   <action name="actionClear">
@@ -308,6 +310,15 @@
    </property>
    <property name="text">
     <string>Rename Selected File</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="../DoubleFileScanner.qrc">
+     <normaloff>:/res/Button_FileOpen.png</normaloff>:/res/Button_FileOpen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Selected File</string>
    </property>
   </action>
  </widget>

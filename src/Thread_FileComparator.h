@@ -60,7 +60,7 @@ class FileComparator : public QThread
 	Q_OBJECT
 
 public:
-	FileComparator(volatile bool *abortFlag);
+	FileComparator(volatile bool *abortFlag, const int &threadCount = -1);
 	virtual ~FileComparator(void);
 
 	void addFiles(const QStringList &files);

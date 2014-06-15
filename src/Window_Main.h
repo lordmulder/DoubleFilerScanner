@@ -51,6 +51,8 @@ private slots:
 	void directoryScannerFinished(void);
 	void fileComparatorProgressChanged(const int &progress);
 	void fileComparatorFinished(void);
+	void openFile(void);
+	void openFile(const QModelIndex &index);
 	void gotoFile(void);
 	void gotoFile(const QModelIndex &index);
 	void renameFile(void);

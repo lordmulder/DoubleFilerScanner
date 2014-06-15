@@ -34,3 +34,4 @@ void printConsole(const char* text, const int &logLevel);
 quint32 getCurrentThread(void);
 void changeWindowIcon(QWidget *window, const QIcon &icon, const bool bIsBigIcon = true);
 void shellExplore(const wchar_t *path);
+QString getEnvString(const QString &name);

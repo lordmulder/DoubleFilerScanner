@@ -85,6 +85,9 @@ MainWindow::MainWindow(void)
 {
 	m_abortFlag = true;
 	m_unattendedFlag = false;
+	
+	//Determine threads count
+	const int threadCount = qBound(0, getEnvString("DBLSCAN_THREADS").toInt(), 64);
 
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
@@ -110,6 +113,7 @@ MainWindow::MainWindow(void)
 	connect(ui->actionStart,    SIGNAL(triggered()), this, SLOT(startScan()));
 	connect(ui->actionClear,    SIGNAL(triggered()), this, SLOT(clearData()));
 	connect(ui->actionExit,     SIGNAL(triggered()), this, SLOT(close()));
+	connect(ui->actionOpen,     SIGNAL(triggered()), this, SLOT(openFile()));
 	connect(ui->actionGoto,     SIGNAL(triggered()), this, SLOT(gotoFile()));
 	connect(ui->actionRename,   SIGNAL(triggered()), this, SLOT(renameFile()));
 	connect(ui->actionDelete,   SIGNAL(triggered()), this, SLOT(deleteFile()));
@@ -122,11 +126,11 @@ MainWindow::MainWindow(void)
 	m_model = new DuplicatesModel();
 
 	//Create directory scanner
-	m_directoryScanner = new DirectoryScanner(&m_abortFlag);
+	m_directoryScanner = new DirectoryScanner(&m_abortFlag, threadCount);
 	connect(m_directoryScanner, SIGNAL(finished()), this, SLOT(directoryScannerFinished()), Qt::QueuedConnection);
 
 	//Create file comparator
-	m_fileComparator = new FileComparator(&m_abortFlag);
+	m_fileComparator = new FileComparator(&m_abortFlag, threadCount);
 	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(duplicateFound(const QByteArray, const QStringList)), m_model, SLOT(addDuplicate(const QByteArray, const QStringList)), Qt::BlockingQueuedConnection);
@@ -134,7 +138,7 @@ MainWindow::MainWindow(void)
 	//Setup tree view
 	ui->treeView->setExpandsOnDoubleClick(false);
 	ui->treeView->setHeaderHidden(true);
-	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(gotoFile(QModelIndex)));
+	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(openFile(QModelIndex)));
 
 	//Setup animator
 	m_movie = new QMovie(":/res/Spinner.gif");
@@ -382,6 +386,35 @@ void MainWindow::fileComparatorProgressChanged(const int &progress)
 {
 	updateProgress(progress);
 	Taskbar::setTaskbarProgress(this, progress, 100);
+}
+
+void MainWindow::openFile(void)
+{
+	ENSURE_APP_IS_IDLE();
+	QModelIndex selected = getSelectedItem();
+	
+	if(!selected.isValid())
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, no file is currently selected!"));
+		return;
+	}
+
+	openFile(selected);
+}
+
+void MainWindow::openFile(const QModelIndex &index)
+{
+	ENSURE_APP_IS_IDLE();
+
+	const QString &filePath = m_model->getFilePath(index);
+	if(!filePath.isEmpty())
+	{
+		QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+	}
+	else
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Sorry, selected item doesn't look like a file!"));
+	}
 }
 
 void MainWindow::gotoFile(void)

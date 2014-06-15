@@ -32,6 +32,7 @@
     <file>res/Button_Export.png</file>
     <file>res/Button_FileDelete.png</file>
     <file>res/Button_FileGoto.png</file>
+    <file>res/Button_FileOpen.png</file>
     <file>res/Button_FileRename.png</file>
     <file>res/Button_FolderAdd.png</file>
     <file>res/Button_FolderRemove.png</file>

@@ -40,13 +40,20 @@ static const QStringList EMPTY_STRINGLIST;
 // Directory Scanner
 //=======================================================================================
 
-DirectoryScanner::DirectoryScanner(volatile bool *abortFlag, const bool recursive)
+DirectoryScanner::DirectoryScanner(volatile bool *abortFlag, const int &threadCount, const bool recursive)
 :
 	m_abortFlag(abortFlag),
 	m_recusrive(recursive)
 {
 	m_pendingTasks = 0;
 	m_pool = new QThreadPool(this);
+
+	if(threadCount > 0)
+	{
+		m_pool->setMaxThreadCount(qBound(1, threadCount, 64));
+	}
+
+	//qDebug("Using %d worker threads.", m_pool->maxThreadCount());
 }
 
 DirectoryScanner::~DirectoryScanner(void)

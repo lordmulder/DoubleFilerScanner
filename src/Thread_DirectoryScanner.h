@@ -58,7 +58,7 @@ class DirectoryScanner : public QThread
 	Q_OBJECT
 
 public:
-	DirectoryScanner(volatile bool *abortFlag, const bool recursive = true);
+	DirectoryScanner(volatile bool *abortFlag, const int &threadCount = -1, const bool recursive = true);
 	virtual ~DirectoryScanner(void);
 
 	void setRecursive(const bool &recusrive);
