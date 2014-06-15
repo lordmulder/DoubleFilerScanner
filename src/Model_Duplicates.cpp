@@ -282,13 +282,15 @@ void DuplicatesModel::clear(void)
 void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList files)
 {
 	QWriteLocker writeLock(&m_lock);
-
 	beginResetModel();
+
 	DuplicateItem *currentKey = new DuplicateItem(m_root, hash.toHex().constData());
 	for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
 	{
 		new DuplicateItem(currentKey, (*iterFile), true);
 	}
+
+	writeLock.unlock();
 	endResetModel();
 }
 
@@ -309,6 +311,7 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 					if(QFile::rename(currentFile->text(), newFilePath))
 					{
 						currentFile->setText(newFilePath);
+						writeLock.unlock();
 						emit dataChanged(index, index);
 						return true;
 					}
@@ -339,6 +342,7 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 						{
 							beginRemoveRows(parent(index), index.row(), index.row());
 							parentItem->removeChild(currentFile);
+							writeLock.unlock();
 							endRemoveRows();
 						}
 						return true;

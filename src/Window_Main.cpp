@@ -459,6 +459,8 @@ void MainWindow::renameFile(const QModelIndex &index)
 				QApplication::beep();
 			}
 			
+			qWarning("Going to rename to: %s", targetName.toUtf8().constData());
+
 			if(!m_model->renameFile(index, targetName))
 			{
 				QMessageBox::warning(this, tr("Warning"), tr("Sorry, failed to rename the selected file!"));
