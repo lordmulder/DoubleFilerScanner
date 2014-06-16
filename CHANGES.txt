@@ -5,10 +5,10 @@ Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.
 Version History
 ------------------------------------------------------------------------------
 
-Version 2.00 [2014-05-14]
+Version 2.00 [2014-06-14]
 - First public release of the v2.xx branch
 
-Version 2.01 [2014-05-16]
+Version 2.01 [2014-06-16]
 - Fixed Windows XP compatibility
 - Added commands to delete or rename a duplicate file
 - Improved sorting of the results
