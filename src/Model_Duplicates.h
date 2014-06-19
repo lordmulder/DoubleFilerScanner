@@ -56,6 +56,7 @@ public:
 	unsigned int duplicateCount(void) const;
 	unsigned int duplicateFileCount(const QModelIndex &index) const;
 	const QString &getFilePath(const QModelIndex &index) const;
+	const qint64 &getFileSize(const QModelIndex &index) const;
 	QString toString(void);
 	
 	void clear(void);
@@ -77,6 +78,4 @@ protected:
 
 	bool exportToIni(const QString &outFile);
 	bool exportToXml(const QString &outFile);
-
-	static QString sizeToString(const qint64 &value);
 };

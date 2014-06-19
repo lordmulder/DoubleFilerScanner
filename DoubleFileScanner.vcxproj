@@ -26,9 +26,11 @@
     <ClCompile Include="src\Thread_DirectoryScanner.cpp" />
     <ClCompile Include="src\Thread_FileComparator.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Utilities.cpp" />
     <ClCompile Include="src\Window_Directories.cpp" />
     <ClCompile Include="src\Window_Main.cpp" />
     <ClCompile Include="src\System.cpp" />
+    <ClInclude Include="src\Utilities.h" />
     <ClCompile Include="tmp\Common\moc\MOC_Model_Duplicates.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_DirectoryScanner.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_FileComparator.cpp" />

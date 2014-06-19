@@ -29,6 +29,7 @@
 #include "Thread_FileComparator.h"
 #include "Model_Duplicates.h"
 #include "Window_Directories.h"
+#include "Utilities.h"
 #include "Taskbar.h"
 
 #include <QCloseEvent>
@@ -54,6 +55,20 @@ static void UNSET_MODEL(QTreeView *view)
 	MY_DELETE(selectionModel);
 }
 
+static void SETUP_MODEL(QTreeView *view, QAbstractItemModel *model)
+{
+	UNSET_MODEL(view);
+	view->setModel(model);
+	if(QHeaderView *header = view->header())
+	{
+		header->setResizeMode(0, QHeaderView::Stretch);
+		header->setResizeMode(1, QHeaderView::ResizeToContents);
+		header->setMovable(false);
+		header->setClickable(false);
+	}
+	view->expandAll();
+}
+
 static void ENABLE_MENU(QMenu *menu, const bool &enabled)
 {
 	QList<QAction*> actions = menu->actions();
@@ -61,6 +76,25 @@ static void ENABLE_MENU(QMenu *menu, const bool &enabled)
 	{
 		(*iter)->setEnabled(enabled);
 	}
+}
+
+static bool DELETE_ONE_FILE(DuplicatesModel *model, const QModelIndex &group, qint64 *size)
+{
+	int currentIndex = model->rowCount(group);
+	while(--currentIndex >= 0)
+	{
+		const QModelIndex fileIndex = model->index(currentIndex, 0, group);
+		const qint64 currentSize = model->getFileSize(fileIndex);
+		if(model->deleteFile(fileIndex))
+		{
+			if(size)
+			{
+				*size += currentSize;
+			}
+			return true;
+		}
+	}
+	return false;
 }
 
 #define ENSURE_APP_IS_IDLE() do \
@@ -110,17 +144,18 @@ MainWindow::MainWindow(void)
 	connect(ui->buttonExit,  SIGNAL(clicked()), this, SLOT(close()));
 
 	//Setup menu connections
-	connect(ui->actionStart,    SIGNAL(triggered()), this, SLOT(startScan()));
-	connect(ui->actionClear,    SIGNAL(triggered()), this, SLOT(clearData()));
-	connect(ui->actionExit,     SIGNAL(triggered()), this, SLOT(close()));
-	connect(ui->actionOpen,     SIGNAL(triggered()), this, SLOT(openFile()));
-	connect(ui->actionGoto,     SIGNAL(triggered()), this, SLOT(gotoFile()));
-	connect(ui->actionRename,   SIGNAL(triggered()), this, SLOT(renameFile()));
-	connect(ui->actionDelete,   SIGNAL(triggered()), this, SLOT(deleteFile()));
-	connect(ui->actionClipbrd,  SIGNAL(triggered()), this, SLOT(copyToClipboard()));
-	connect(ui->actionExport,   SIGNAL(triggered()), this, SLOT(exportToFile()));
-	connect(ui->actionHomepage, SIGNAL(triggered()), this, SLOT(showHomepage()));
-	connect(ui->actionAbout,    SIGNAL(triggered()), this, SLOT(showAbout()));
+	connect(ui->actionStart,     SIGNAL(triggered()), this, SLOT(startScan()));
+	connect(ui->actionClear,     SIGNAL(triggered()), this, SLOT(clearData()));
+	connect(ui->actionAutoClean, SIGNAL(triggered()), this, SLOT(autoClean()));
+	connect(ui->actionExit,      SIGNAL(triggered()), this, SLOT(close()));
+	connect(ui->actionOpen,      SIGNAL(triggered()), this, SLOT(openFile()));
+	connect(ui->actionGoto,      SIGNAL(triggered()), this, SLOT(gotoFile()));
+	connect(ui->actionRename,    SIGNAL(triggered()), this, SLOT(renameFile()));
+	connect(ui->actionDelete,    SIGNAL(triggered()), this, SLOT(deleteFile()));
+	connect(ui->actionClipbrd,   SIGNAL(triggered()), this, SLOT(copyToClipboard()));
+	connect(ui->actionExport,    SIGNAL(triggered()), this, SLOT(exportToFile()));
+	connect(ui->actionHomepage,  SIGNAL(triggered()), this, SLOT(showHomepage()));
+	connect(ui->actionAbout,     SIGNAL(triggered()), this, SLOT(showAbout()));
 	
 	//Create model
 	m_model = new DuplicatesModel();
@@ -153,7 +188,9 @@ MainWindow::MainWindow(void)
 	//Create context menu
 	ui->treeView->addActions(ui->menuEdit->actions());
 	ui->treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
-	ENABLE_MENU(ui->menuEdit, false);
+	
+	//Disable menu items initially
+	setMenuItemsEnabled(false);
 
 	//Create timer
 	m_timer = new QElapsedTimer();
@@ -301,7 +338,7 @@ void MainWindow::startScan(void)
 	if(!directories.isEmpty())
 	{
 		setButtonsEnabled(false);
-		ENABLE_MENU(ui->menuEdit, false);
+		setMenuItemsEnabled(false);
 		m_abortFlag = false;
 
 		UNSET_MODEL(ui->treeView);
@@ -368,13 +405,8 @@ void MainWindow::fileComparatorFinished(void)
 
 	if(m_model->duplicateCount() > 0)
 	{
-		UNSET_MODEL(ui->treeView);
-		ui->treeView->setModel(m_model);
-		ui->treeView->header()->setResizeMode(0, QHeaderView::Stretch);
-		ui->treeView->header()->setResizeMode(1, QHeaderView::ResizeToContents);
-		ui->treeView->header()->setMovable(false);
-		ui->treeView->header()->setClickable(false);
-		ENABLE_MENU(ui->menuEdit, true);
+		SETUP_MODEL(ui->treeView, m_model);
+		setMenuItemsEnabled(true);
 	}
 	else
 	{
@@ -383,7 +415,6 @@ void MainWindow::fileComparatorFinished(void)
 
 	setButtonsEnabled(true);
 	QApplication::beep();
-	ui->treeView->expandAll();
 }
 
 void MainWindow::fileComparatorProgressChanged(const int &progress)
@@ -539,7 +570,7 @@ void MainWindow::deleteFile(const QModelIndex &index)
 	const QString &filePath = m_model->getFilePath(index);
 	if(!filePath.isEmpty())
 	{
-		const QString text = QString("<nobr>%1</nobr><br><br><nobr><tt>%2</tt></nobr>").arg(tr("Do you really want to permanently delete the selected file?"), QDir::toNativeSeparators(filePath));
+		const QString text = QString("<nobr>%1</nobr><br><br><tt style=\"white-space:pre-wrap\">%2</tt>").arg(tr("Do you really want to permanently delete the selected file?"), QDir::toNativeSeparators(filePath));
 		if(QMessageBox::question(this, tr("Delete File"), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 		{
 			if(m_model->duplicateFileCount(index) < 2)
@@ -569,7 +600,7 @@ void MainWindow::clearData(void)
 	if(ui->treeView->model() || m_signCancelled->isVisible() || m_signCompleted->isVisible())
 	{
 		UNSET_MODEL(ui->treeView);
-		ENABLE_MENU(ui->menuEdit, false);
+		setMenuItemsEnabled(false);
 		m_model->clear();
 
 		updateProgress(0);
@@ -617,6 +648,71 @@ void MainWindow::showHomepage(void)
 {
 	ENSURE_APP_IS_IDLE();
 	QDesktopServices::openUrl(QUrl(HOMEPAGE_URL));
+}
+
+void MainWindow::autoClean(void)
+{
+	ENSURE_APP_IS_IDLE();
+
+	if(!(ui->treeView->model() && (ui->treeView->model()->rowCount() > 0)))
+	{
+		qWarning("Cannot perform clean up at this moment!");
+		return;
+	}
+
+	if(QMessageBox::warning(this, tr("Automatic Clean-up"), tr("<nobr>This is going to delete all files but one for each duplicates group.</nobr><br><nobr>Files will be deleted permanently! Do you really want to contine?</nobr>"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	setButtonsEnabled(false);
+	setMenuItemsEnabled(false);
+	m_abortFlag = false;
+
+	UNSET_MODEL(ui->treeView);
+	ui->label->setText(tr("Automatic clean-up operation is in progress, please be patient..."));
+	showSign(-1);
+
+	qint64 spaceSaved = 0;
+	const int groupCount = m_model->rowCount();
+
+	for(int i = 0; i < groupCount; i++)
+	{
+		updateProgress(i, groupCount);
+		QApplication::processEvents();
+		const QModelIndex currentGroup = m_model->index(i, 0);
+		while(m_model->rowCount(currentGroup) > 1)
+		{
+			if(!DELETE_ONE_FILE(m_model, currentGroup, &spaceSaved))
+			{
+				qWarning("Failed to clean-up current duplicates group!");
+				break;
+			}
+		}
+		if(m_abortFlag)
+		{
+			qWarning("Operation cancelled by user!");
+			break;
+		}
+	}
+
+	if(m_abortFlag)
+	{
+		ui->label->setText(tr("The operation has been aborted by the user!"));
+	}
+	else
+	{
+		updateProgress(100);
+		ui->label->setText(tr("Automatic clean-up operation completed: Saved %1 of disk space.").arg(Utilities::sizeToString(spaceSaved)));
+	}
+
+	SETUP_MODEL(ui->treeView, m_model);
+
+	m_abortFlag = true;
+	setMenuItemsEnabled(true);
+	setButtonsEnabled(true);
+
+	QApplication::beep();
 }
 
 void MainWindow::showAbout(void)
@@ -694,14 +790,23 @@ void MainWindow::setButtonsEnabled(const bool &enabled)
 	}
 }
 
-void MainWindow::updateProgress(const int &progress)
+void MainWindow::setMenuItemsEnabled(const bool &enabled)
+{
+	ENABLE_MENU(ui->menuEdit, enabled);
+	ui->actionAutoClean->setEnabled(enabled);
+	ui->actionExport->setEnabled(enabled);
+	ui->actionClipbrd->setEnabled(enabled);
+	ui->actionClear->setEnabled(enabled);
+}
+
+void MainWindow::updateProgress(const int &progress, const int &maxValue)
 {
 	if(progress >= 0)
 	{
-		ui->progressBar->setMaximum(100);
-		ui->progressBar->setValue(qMin(progress, 100));
+		ui->progressBar->setMaximum(maxValue);
+		ui->progressBar->setValue(qMin(progress, maxValue));
 		Taskbar::setTaskbarState(this, Taskbar::TaskbarNormalState);
-		Taskbar::setTaskbarProgress(this, qMin(progress, 100), 100);
+		Taskbar::setTaskbarProgress(this, qMin(progress, maxValue), maxValue);
 	}
 	else
 	{

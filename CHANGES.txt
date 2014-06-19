@@ -6,6 +6,8 @@ Version History
 ------------------------------------------------------------------------------
 
 Version 2.02 [2014-??-??]
+- Added automatic clean-up wizard
+- Display the number of duplicates per group
 - Display the size of each file
 - Display tooltips when hovering tree view items
 - Various minor fixes and improvements

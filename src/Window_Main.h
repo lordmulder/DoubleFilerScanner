@@ -62,6 +62,7 @@ private slots:
 	void clearData(void);
 	void exportToFile(void);
 	void copyToClipboard(void);
+	void autoClean(void);
 	void showHomepage(void);
 	void showAbout(void);
 
@@ -76,8 +77,9 @@ protected:
 
 	void centerWidget(QWidget *widget);
 	QLabel *makeLabel(QWidget *parent, const QString &fileName, const bool &hidden = true);
-	void updateProgress(const int &progress);
+	void updateProgress(const int &progress, const int &maxValue = 100);
 	void setButtonsEnabled(const bool &enabled);
+	void setMenuItemsEnabled(const bool &enabled);
 	void showSign(const int &id);
 	void handleCommandLineArgs(void);
 	QModelIndex getSelectedItem(void);

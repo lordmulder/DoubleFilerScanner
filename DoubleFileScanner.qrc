@@ -25,6 +25,7 @@
   <qresource>
     <file>res/Button_About.png</file>
     <file>res/Button_Accept.png</file>
+    <file>res/Button_AutoClean.png</file>
     <file>res/Button_Cancel.png</file>
     <file>res/Button_Clear.png</file>
     <file>res/Button_CopyToClipboard.png</file>

@@ -29,9 +29,11 @@
 #include <QXmlStreamWriter>
 
 #include "Config.h"
+#include "Utilities.h"
 #include "System.h"
 
 static const QString EMPTY_STRING;
+static const qint64 ZERO_SIZE = 0;
 
 //===================================================================
 // Duplicates Items
@@ -276,7 +278,7 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 		case Qt::DisplayRole:
 			if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
 			{
-				return sizeToString(file->getFileSize());
+				return Utilities::sizeToString(file->getFileSize());
 			}
 			break;
 		case Qt::ToolTipRole:
@@ -358,6 +360,22 @@ const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
 	}
 	
 	return EMPTY_STRING;
+}
+
+const qint64 &DuplicatesModel::getFileSize(const QModelIndex &index) const
+{
+	if(index.isValid())
+	{
+		if(DuplicateItem *currentItem = static_cast<DuplicateItem*>(index.internalPointer()))
+		{
+			if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentItem))
+			{
+				return currentFile->getFileSize();
+			}
+		}
+	}
+
+	return ZERO_SIZE;
 }
 
 QString DuplicatesModel::toString(void)
@@ -600,24 +618,4 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 
 	file.close();
 	return true;
-}
-
-//===================================================================
-// Utilities
-//===================================================================
-
-QString DuplicatesModel::sizeToString(const qint64 &value)
-{
-	const char *SUFFIX[4] = { "KB", "MB", "GB", "TB" };
-
-	int idx = 0;
-	qint64 ref = 1024;
-
-	while(((value / ref) > 999i64) && (idx < 3))
-	{
-		ref *= 1024i64;
-		idx++;
-	}
-
-	return QString().sprintf("%.2f %s", double(value)/double(ref), SUFFIX[idx]);
 }
