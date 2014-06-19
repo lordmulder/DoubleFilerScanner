@@ -484,6 +484,11 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 				if(QFileInfo(oldFilePath).exists() && QFileInfo(oldFilePath).isFile())
 				{
 					okay = QFile::remove(currentFile->getFilePath());
+					if(!okay)
+					{
+						QFile::setPermissions(currentFile->getFilePath(), QFile::ReadUser | QFile::WriteUser);
+						okay = QFile::remove(currentFile->getFilePath());
+					}
 				}
 				if(okay)
 				{
