@@ -78,23 +78,27 @@ static void ENABLE_MENU(QMenu *menu, const bool &enabled)
 	}
 }
 
-static bool DELETE_ONE_FILE(DuplicatesModel *model, const QModelIndex &group, qint64 *size)
+static bool DELETE_ALL_BUT_ONE(DuplicatesModel *model, const QModelIndex &group, qint64 *size)
 {
-	int currentIndex = model->rowCount(group);
-	while(--currentIndex >= 0)
+	int fileCount, currentIndex;
+	fileCount = currentIndex = model->rowCount(group);
+	while((fileCount > 1) && (currentIndex > 0))
 	{
-		const QModelIndex fileIndex = model->index(currentIndex, 0, group);
-		const qint64 currentSize = model->getFileSize(fileIndex);
-		if(model->deleteFile(fileIndex))
+		const QModelIndex fileIndex = model->index(--currentIndex, 0, group);
+		if(fileIndex.isValid())
 		{
-			if(size)
+			const qint64 currentSize = model->getFileSize(fileIndex);
+			if(model->deleteFile(fileIndex))
 			{
-				*size += currentSize;
+				if(size)
+				{
+					*size += currentSize;
+				}
+				fileCount--;
 			}
-			return true;
 		}
 	}
-	return false;
+	return (fileCount < 2);
 }
 
 #define ENSURE_APP_IS_IDLE() do \
@@ -681,9 +685,9 @@ void MainWindow::autoClean(void)
 		updateProgress(i, groupCount);
 		QApplication::processEvents();
 		const QModelIndex currentGroup = m_model->index(i, 0);
-		while(m_model->rowCount(currentGroup) > 1)
+		if(currentGroup.isValid())
 		{
-			if(!DELETE_ONE_FILE(m_model, currentGroup, &spaceSaved))
+			if(!DELETE_ALL_BUT_ONE(m_model, currentGroup, &spaceSaved))
 			{
 				qWarning("Failed to clean-up current duplicates group!");
 				break;
@@ -696,6 +700,9 @@ void MainWindow::autoClean(void)
 		}
 	}
 
+	setMenuItemsEnabled(true);
+	setButtonsEnabled(true);
+
 	if(m_abortFlag)
 	{
 		ui->label->setText(tr("The operation has been aborted by the user!"));
@@ -704,14 +711,11 @@ void MainWindow::autoClean(void)
 	{
 		updateProgress(100);
 		ui->label->setText(tr("Automatic clean-up operation completed: Saved %1 of disk space.").arg(Utilities::sizeToString(spaceSaved)));
+		ui->actionAutoClean->setEnabled(false);
 	}
 
-	SETUP_MODEL(ui->treeView, m_model);
-
 	m_abortFlag = true;
-	setMenuItemsEnabled(true);
-	setButtonsEnabled(true);
-
+	SETUP_MODEL(ui->treeView, m_model);
 	QApplication::beep();
 }
 
@@ -753,7 +757,7 @@ void MainWindow::showAbout(void)
 	QAbstractButton *btnCancel = msgBox.addButton(tr("Discard"),  QMessageBox::RejectRole);
 	btnAccept->setMinimumWidth(90);
 	btnCancel->setMinimumWidth(90);
-	btnAccept->setIcon(QIcon(":/res/Button_About.png"));
+	btnAccept->setIcon(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"));
 	btnCancel->setIcon(QIcon(":/res/Button_Cancel.png"));
 
 	msgBox.exec();
