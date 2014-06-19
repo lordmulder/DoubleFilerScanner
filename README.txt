@@ -36,7 +36,10 @@ parallelize and speed-up the SHA-1 computations on multi-core processors. On
 our test machine it took ~15 minutes to analyse all the ~260,000 files on the
 system drive (~63.5 GB). During this operation ~44,000 duplicates were found.
 
-The list of identified duplicates can be exported to the XML and INI formats.
+Once the scan is completed, the program provides commands to review, rename or
+delete the duplicate files manually. Alternatively, the "automatic clean-up"
+wizard may be invoked in order to remove ALL redundant files at a single blow.
+Optionally, the list of duplicates can be exported to the XML or INI format.
 
 
 ------------------------------------------------------------------------------
