@@ -83,6 +83,7 @@ public:
 	void removeChild(DuplicateItem *const child)
 	{
 		m_childeren.removeAll(child);
+		delete child;
 	}
 
 	virtual int type(void)
