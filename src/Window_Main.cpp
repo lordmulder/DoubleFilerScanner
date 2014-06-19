@@ -689,8 +689,7 @@ void MainWindow::autoClean(void)
 		{
 			if(!DELETE_ALL_BUT_ONE(m_model, currentGroup, &spaceSaved))
 			{
-				qWarning("Failed to clean-up current duplicates group!");
-				break;
+				qWarning("Failed to clean-up current duplicates group! (row %d)", i);
 			}
 		}
 		if(m_abortFlag)
