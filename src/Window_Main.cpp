@@ -137,7 +137,6 @@ MainWindow::MainWindow(void)
 
 	//Setup tree view
 	ui->treeView->setExpandsOnDoubleClick(false);
-	ui->treeView->setHeaderHidden(true);
 	connect(ui->treeView, SIGNAL(activated(QModelIndex)), this, SLOT(openFile(QModelIndex)));
 
 	//Setup animator
@@ -371,6 +370,10 @@ void MainWindow::fileComparatorFinished(void)
 	{
 		UNSET_MODEL(ui->treeView);
 		ui->treeView->setModel(m_model);
+		ui->treeView->header()->setResizeMode(0, QHeaderView::Stretch);
+		ui->treeView->header()->setResizeMode(1, QHeaderView::ResizeToContents);
+		ui->treeView->header()->setMovable(false);
+		ui->treeView->header()->setClickable(false);
 		ENABLE_MENU(ui->menuEdit, true);
 	}
 	else

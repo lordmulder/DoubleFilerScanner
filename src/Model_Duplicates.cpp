@@ -37,76 +37,130 @@ static const QString EMPTY_STRING;
 // Duplicates Items
 //===================================================================
 
+enum
+{
+	ITEM_ROOT  = 0,
+	ITEM_GROUP = 1,
+	ITEM_FILE  = 2
+}
+ItemType_t;
+
 class DuplicateItem
 {
 public:
-	DuplicateItem(DuplicateItem *const parent, const QString &text = QString(), const bool &isFile = false);
-	~DuplicateItem(void);
+	DuplicateItem(DuplicateItem *const parent = NULL)
+	:
+		m_parent(parent)
+	{
+		if(parent)
+		{
+			parent->addChild(this);
+		}
+	}
 
-	inline const QString &text(void) const { return m_text; }
-	inline void setText(const QString &text) { m_text = text; }
+	virtual ~DuplicateItem(void)
+	{
+		removeAllChilderen();
+	}
+
 	inline DuplicateItem *child(const int index) const { return m_childeren[index]; }
 	inline int childCount(void) const { return m_childeren.count(); }
 	inline void addChild(DuplicateItem *child) { m_childeren << child; }
 	inline int row(void) { return m_parent ? m_parent->m_childeren.indexOf(this) : 0; }
 	inline DuplicateItem *parent(void) const { return m_parent; }
-	inline bool isFile(void) const { return m_isFile; }
 
-	void removeAllChilderen(void);
-	void removeChild(DuplicateItem *const child);
-	void dump(const int depth);
+	void removeAllChilderen(void)
+	{
+		while(!m_childeren.isEmpty())
+		{
+			DuplicateItem *child = m_childeren.takeLast();
+			MY_DELETE(child);
+		}
+	}
+
+	void removeChild(DuplicateItem *const child)
+	{
+		m_childeren.removeAll(child);
+	}
+
+	virtual int type(void)
+	{
+		return ITEM_ROOT;
+	}
+
+	virtual QString toString(void)
+	{
+		return QString();
+	}
 
 protected:
-	QString m_text;
-	const bool m_isFile;
-
 	DuplicateItem *const m_parent;
 	QList<DuplicateItem*> m_childeren;
 
 private:
-	DuplicateItem &operator=(const DuplicateItem&);
+	DuplicateItem &operator=(const DuplicateItem&)
+	{
+		throw std::runtime_error("Unimplemented");
+	}
 };
 
-DuplicateItem::DuplicateItem(DuplicateItem *const parent, const QString &text, const bool &isFile)
-:
-	m_parent(parent),
-	m_text(text),
-	m_isFile(isFile)
+class DuplicateItem_Group : public DuplicateItem
 {
-	if(parent)
+public:
+	DuplicateItem_Group(DuplicateItem *const parent, const QByteArray &hash)
+	:
+		DuplicateItem(parent),
+		m_hash(hash)
 	{
-		parent->addChild(this);
+		/*nithing to do here*/
 	}
-}
 
-DuplicateItem::~DuplicateItem(void)
-{
-	removeAllChilderen();
-}
-
-void DuplicateItem::removeAllChilderen(void)
-{
-	while(!m_childeren.isEmpty())
+	virtual int type(void)
 	{
-		DuplicateItem *child = m_childeren.takeLast();
-		MY_DELETE(child);
+		return ITEM_GROUP;
 	}
-}
 
-void DuplicateItem::removeChild(DuplicateItem *const child)
-{
-	m_childeren.removeAll(child);
-}
-
-void DuplicateItem::dump(int depth = 0)
-{
-	static const char *tabs = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
-	qDebug("%.*s%s", depth, tabs, m_text.toUtf8().constData());
-	for(QList<DuplicateItem*>::ConstIterator iter = m_childeren.constBegin(); iter != m_childeren.constEnd(); iter++)
+	virtual QString toString(void)
 	{
-		(*iter)->dump(depth + 1);
+		return QString().sprintf("%s (x%d)", m_hash.toHex().constData(), m_childeren.count());
 	}
-}
+
+	inline const QByteArray &getHash(void) const { return m_hash; }
+
+protected:
+	const QByteArray m_hash;
+};
+
+class DuplicateItem_File : public DuplicateItem
+{
+public:
+	DuplicateItem_File(DuplicateItem *const parent, const QString &filePath, const qint64 &fileSize)
+	:
+		DuplicateItem(parent),
+		m_filePath(filePath),
+		m_fileSize(fileSize)
+	{
+		/*nithing to do here*/
+	}
+
+	virtual int type(void)
+	{
+		return ITEM_FILE;
+	}
+
+	virtual QString toString(void)
+	{
+		return QDir::toNativeSeparators(m_filePath);
+	}
+
+	inline const QString &getFilePath(void) const    { return m_filePath;     }
+	inline void setFilePath(const QString &filePath) { m_filePath = filePath; }
+	inline const qint64 &getFileSize(void) const     { return m_fileSize;     }
+
+protected:
+	QString m_filePath;
+	const qint64 m_fileSize;
+};
 
 //===================================================================
 // Constructor & Destructor
@@ -114,16 +168,17 @@ void DuplicateItem::dump(int depth = 0)
 
 DuplicatesModel::DuplicatesModel(void)
 {
-	m_bulIcon = new QIcon(":/res/Icon_Bullet.png");
-	m_dupIcon = new QIcon(":/res/Icon_Duplicate.png");
+	m_iconDflt = new QIcon(":/res/Icon_Bullet.png");
+	m_iconDupl = new QIcon(":/res/Icon_Duplicate.png");
 
 	m_fontDflt = new QFont("Monospace");
 	m_fontDflt->setStyleHint(QFont::TypeWriter);
+	
 	m_fontBold = new QFont("Monospace");
 	m_fontBold->setStyleHint(QFont::TypeWriter);
 	m_fontBold->setBold(true);
 
-	m_root = new DuplicateItem(NULL, "ROOT BLOODY ROOT");
+	m_root = new DuplicateItem();
 }
 
 DuplicatesModel::~DuplicatesModel(void)
@@ -131,8 +186,8 @@ DuplicatesModel::~DuplicatesModel(void)
 	MY_DELETE(m_root);
 	MY_DELETE(m_fontDflt);
 	MY_DELETE(m_fontBold);
-	MY_DELETE(m_bulIcon);
-	MY_DELETE(m_dupIcon);
+	MY_DELETE(m_iconDflt);
+	MY_DELETE(m_iconDupl);
 }
 
 //===================================================================
@@ -183,9 +238,9 @@ int DuplicatesModel::rowCount(const QModelIndex &parent) const
 	return item->childCount();
 }
 
-int DuplicatesModel::columnCount(const QModelIndex&) const
+int DuplicatesModel::columnCount(const QModelIndex &parent) const
 {
-	return 1;
+	return 2;
 }
 
 QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
@@ -196,14 +251,66 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 		item = static_cast<DuplicateItem*>(index.internalPointer());
 	}
 
-	switch(role)
+	switch(index.column())
 	{
-	case Qt::DisplayRole:
-		return QDir::toNativeSeparators(item->text());
-	case Qt::FontRole:
-		return item->isFile() ? (*m_fontDflt) : (*m_fontBold);
-	case Qt::DecorationRole:
-		return item->isFile() ? (*m_bulIcon) : (*m_dupIcon);
+	case 0:
+		switch(role)
+		{
+		case Qt::DisplayRole:
+			return item->toString();
+		case Qt::ToolTipRole:
+			if(DuplicateItem_Group *group = dynamic_cast<DuplicateItem_Group*>(item))
+			{
+				return QString().sprintf("SHA-1: %s", group->getHash().toHex().constData());
+			}
+			return item->toString();
+		case Qt::FontRole:
+			return (item->type() == ITEM_GROUP) ? (*m_fontBold) : (*m_fontDflt);
+		case Qt::DecorationRole:
+			return (item->type() == ITEM_GROUP) ? (*m_iconDupl) : (*m_iconDflt);
+		}
+		break;
+	case 1:
+		switch(role)
+		{
+		case Qt::DisplayRole:
+			if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
+			{
+				return sizeToString(file->getFileSize());
+			}
+			break;
+		case Qt::ToolTipRole:
+			if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
+			{
+				return tr("%1 byte").arg(QString::number(file->getFileSize()));
+			}
+			break;
+		case Qt::TextAlignmentRole:
+			return QVariant(Qt::AlignRight | Qt::AlignVCenter);
+		case Qt::FontRole:
+			return (*m_fontDflt);
+		}
+		break;
+	}
+
+	return QVariant();
+}
+
+QVariant DuplicatesModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	if(orientation == Qt::Horizontal)
+	{
+		switch(role)
+		{
+		case Qt::DisplayRole:
+			switch(section)
+			{
+			case 0:
+				return tr("File Name");
+			case 1:
+				return tr("Size");
+			}
+		}
 	}
 
 	return QVariant();
@@ -222,13 +329,13 @@ unsigned int DuplicatesModel::duplicateFileCount(const QModelIndex &index) const
 {
 	if(index.isValid())
 	{
-		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
+		if(DuplicateItem *currentItem = static_cast<DuplicateItem*>(index.internalPointer()))
 		{
-			if(currentFile->isFile())
+			if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentItem))
 			{
-				if(DuplicateItem *parent = currentFile->parent())
+				if(DuplicateItem_Group *duplicateGroup = dynamic_cast<DuplicateItem_Group*>(currentFile->parent()))
 				{
-					return parent->childCount();
+					return duplicateGroup->childCount();
 				}
 			}
 		}
@@ -241,11 +348,11 @@ const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
 {
 	if(index.isValid())
 	{
-		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
+		if(DuplicateItem *currentItem = static_cast<DuplicateItem*>(index.internalPointer()))
 		{
-			if(currentFile->isFile())
+			if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentItem))
 			{
-				return currentFile->text();
+				return currentFile->getFilePath();
 			}
 		}
 	}
@@ -260,17 +367,19 @@ QString DuplicatesModel::toString(void)
 
 	for(int i = 0; i < hashCount; i++)
 	{
-		DuplicateItem *currentHash = m_root->child(i);
-		lines << currentHash->text();
-		const int fileCount = currentHash->childCount();
-
-		for(int j = 0; j < fileCount; j++)
+		if(DuplicateItem_Group *currentGroup = dynamic_cast<DuplicateItem_Group*>(m_root->child(i)))
 		{
-			DuplicateItem *currentFile = currentHash->child(j);
-			lines << QString("- %1").arg(QDir::toNativeSeparators(currentFile->text()));
-		}
+			lines << QString::fromLatin1(currentGroup->getHash().toHex().constData());
+			const int fileCount = currentGroup->childCount();
 
-		lines << QString();
+			for(int j = 0; j < fileCount; j++)
+			{
+				DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentGroup->child(j));
+				lines << QString("- %1").arg(QDir::toNativeSeparators(currentFile->getFilePath()));
+			}
+
+			lines << QString();
+		}
 	}
 
 	return lines.join("\r\n");
@@ -289,26 +398,28 @@ void DuplicatesModel::clear(void)
 
 void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList &files)
 {
-	beginInsertRows(QModelIndex(), m_root->childCount(), m_root->childCount());
-
-	DuplicateItem *currentKey = new DuplicateItem(m_root, hash.toHex().constData());
-	for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
+	if(!files.isEmpty())
 	{
-		new DuplicateItem(currentKey, (*iterFile), true);
+		beginInsertRows(QModelIndex(), m_root->childCount(), m_root->childCount());
+		DuplicateItem_Group *group = new DuplicateItem_Group(m_root, hash);
+		for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
+		{
+			const qint64 fileSize = QFileInfo(*iterFile).size();
+			new DuplicateItem_File(group, (*iterFile), fileSize);
+		}
+		endInsertRows();
 	}
-
-	endInsertRows();
 }
 
 bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFileName)
 {
 	if(index.isValid())
 	{
-		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
+		if(DuplicateItem *currentItem = static_cast<DuplicateItem*>(index.internalPointer()))
 		{
-			if(currentFile->isFile())
+			if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentItem))
 			{
-				const QString oldFilePath = currentFile->text();
+				const QString oldFilePath = currentFile->getFilePath();
 				if(QFileInfo(oldFilePath).exists() && QFileInfo(oldFilePath).isFile())
 				{
 					QString newFilePath = QString("%1/%2").arg(QFileInfo(oldFilePath).absolutePath(), newFileName);
@@ -329,7 +440,7 @@ bool DuplicatesModel::renameFile(const QModelIndex &index, const QString &newFil
 					}
 					if(QFile::rename(oldFilePath, newFilePath))
 					{
-						currentFile->setText(newFilePath);
+						currentFile->setFilePath(newFilePath);
 						emit dataChanged(index, index);
 						return true;
 					}
@@ -345,27 +456,18 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 {
 	if(index.isValid())
 	{
-		if(DuplicateItem *currentFile = static_cast<DuplicateItem*>(index.internalPointer()))
+		if(DuplicateItem *currentItem = static_cast<DuplicateItem*>(index.internalPointer()))
 		{
-			if(currentFile->isFile())
+			if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentItem))
 			{
-				const QString oldFilePath = currentFile->text();
+				const QString oldFilePath = currentFile->getFilePath();
+				bool okay = true;
 				if(QFileInfo(oldFilePath).exists() && QFileInfo(oldFilePath).isFile())
 				{
-					if(QFile::remove(currentFile->text()))
-					{
-						if(DuplicateItem *parentItem = currentFile->parent())
-						{
-							beginRemoveRows(parent(index), index.row(), index.row());
-							parentItem->removeChild(currentFile);
-							endRemoveRows();
-						}
-						return true;
-					}
+					okay = QFile::remove(currentFile->getFilePath());
 				}
-				else
+				if(okay)
 				{
-					//file no longer exists -> remove from model!
 					if(DuplicateItem *parentItem = currentFile->parent())
 					{
 						beginRemoveRows(parent(index), index.row(), index.row());
@@ -373,6 +475,7 @@ bool DuplicatesModel::deleteFile(const QModelIndex &index)
 						endRemoveRows();
 					}
 				}
+				return okay;
 			}
 		}
 	}
@@ -402,7 +505,7 @@ bool DuplicatesModel::exportToFile(const QString &outFile, const int &format)
 bool DuplicatesModel::exportToIni(const QString &outFile)
 {
 	QSettings settings(outFile, QSettings::IniFormat);
-	const int hashCount = m_root->childCount();
+	const int groupCount = m_root->childCount();
 
 	settings.clear();
 
@@ -415,21 +518,22 @@ bool DuplicatesModel::exportToIni(const QString &outFile)
 	settings.setValue("generator", tr("Document created with Double File Scanner v%1").arg(QString().sprintf("%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
 	settings.setValue("rights", tr("Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved."));
 
-	for(int i = 0; i < hashCount; i++)
+	for(int i = 0; i < groupCount; i++)
 	{
-		DuplicateItem *currentHash = m_root->child(i);
-
-		settings.beginGroup(currentHash->text());
-		unsigned int counter = 0;
-		const int fileCount = currentHash->childCount();
-		
-		for(int j = 0; j < fileCount; j++)
+		if(DuplicateItem_Group *currentGroup = dynamic_cast<DuplicateItem_Group*>(m_root->child(i)))
 		{
-			DuplicateItem *currentFile = currentHash->child(j);
-			settings.setValue(QString().sprintf("%08u", counter++), QDir::toNativeSeparators(currentFile->text()));
+			settings.beginGroup(currentGroup->getHash().toHex());
+			unsigned int counter = 0;
+			const int fileCount = currentGroup->childCount();
+			for(int j = 0; j < fileCount; j++)
+			{
+				if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentGroup->child(j)))
+				{
+					settings.setValue(QString().sprintf("%08u", counter++), QDir::toNativeSeparators(currentFile->getFilePath()));
+				}
+			}
+			settings.endGroup();
 		}
-
-		settings.endGroup();
 	}
 
 	if((!settings.isWritable()) || (settings.status() != QSettings::NoError))
@@ -452,7 +556,7 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 	}
 
 	QXmlStreamWriter stream(&file);
-	const int hashCount = m_root->childCount();
+	const int groupCount = m_root->childCount();
 
 	stream.setAutoFormatting(true);
 	stream.writeStartDocument();
@@ -465,25 +569,24 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 
 	stream.writeStartElement("Duplicates");
 
-	for(int i = 0; i < hashCount; i++)
+	for(int i = 0; i < groupCount; i++)
 	{
-		DuplicateItem *currentHash = m_root->child(i);
-
-		stream.writeStartElement("Group");
-		stream.writeAttribute("Hash", currentHash->text());
-		
-		const int fileCount = currentHash->childCount();
-		
-		for(int j = 0; j < fileCount; j++)
+		if(DuplicateItem_Group *currentGroup = dynamic_cast<DuplicateItem_Group*>(m_root->child(i)))
 		{
-			DuplicateItem *currentFile = currentHash->child(j);
-
-			stream.writeStartElement("File");
-			stream.writeAttribute("Name", QDir::toNativeSeparators(currentFile->text()));
+			stream.writeStartElement("Group");
+			stream.writeAttribute("Hash", currentGroup->getHash().toHex());
+			const int fileCount = currentGroup->childCount();
+			for(int j = 0; j < fileCount; j++)
+			{
+				if(DuplicateItem_File *currentFile = dynamic_cast<DuplicateItem_File*>(currentGroup->child(j)))
+				{
+					stream.writeStartElement("File");
+					stream.writeAttribute("Name", QDir::toNativeSeparators(currentFile->getFilePath()));
+					stream.writeEndElement();
+				}
+			}
 			stream.writeEndElement();
 		}
-
-		stream.writeEndElement();
 	}
 
 	stream.writeEndElement();
@@ -497,4 +600,24 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 
 	file.close();
 	return true;
+}
+
+//===================================================================
+// Utilities
+//===================================================================
+
+QString DuplicatesModel::sizeToString(const qint64 &value)
+{
+	const char *SUFFIX[4] = { "KB", "MB", "GB", "TB" };
+
+	int idx = 0;
+	qint64 ref = 1024;
+
+	while(((value / ref) > 999i64) && (idx < 3))
+	{
+		ref *= 1024i64;
+		idx++;
+	}
+
+	return QString().sprintf("%.2f %s", double(value)/double(ref), SUFFIX[idx]);
 }

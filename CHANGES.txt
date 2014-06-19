@@ -5,11 +5,16 @@ Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.
 Version History
 ------------------------------------------------------------------------------
 
-Version 2.00 [2014-06-14]
-- First public release of the v2.xx branch
+Version 2.02 [2014-??-??]
+- Display the size of each file
+- Display tooltips when hovering tree view items
+- Various minor fixes and improvements
 
 Version 2.01 [2014-06-16]
 - Fixed Windows XP compatibility
 - Added commands to delete or rename a duplicate file
 - Improved sorting of the results
 - Various minor fixes and improvements
+
+Version 2.00 [2014-06-14]
+- First public release of the v2.xx branch

@@ -43,6 +43,7 @@ public:
 	virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
 	virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	
 	//Export formats
 	typedef enum
@@ -69,11 +70,13 @@ public slots:
 protected:
 	DuplicateItem *m_root;
 
-	QIcon *m_dupIcon;
-	QIcon *m_bulIcon;
+	QIcon *m_iconDflt;
+	QIcon *m_iconDupl;
 	QFont *m_fontDflt;
 	QFont *m_fontBold;
 
 	bool exportToIni(const QString &outFile);
 	bool exportToXml(const QString &outFile);
+
+	static QString sizeToString(const qint64 &value);
 };
