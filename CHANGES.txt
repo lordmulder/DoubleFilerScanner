@@ -5,6 +5,9 @@ Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.
 Version History
 ------------------------------------------------------------------------------
 
+Version 2.03 [2014-??-??]
+- Performance optimizations (up to 33% faster)
+
 Version 2.02 [2014-06-20]
 - Added automatic clean-up wizard
 - Display the number of duplicates per group

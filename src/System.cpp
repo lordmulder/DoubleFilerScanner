@@ -39,12 +39,105 @@
 #include <QWidget>
 #include <QIcon>
 
-#pragma intrinsic(_InterlockedExchange)
-
 typedef BOOL (WINAPI *PSetConsoleIcon)(HICON hIcon);
 
-static volatile HANDLE g_hConsole = INVALID_HANDLE_VALUE;
-static volatile long g_consoleLock = 0L;
+//===================================================================
+// CriticalSection Class
+//===================================================================
+
+/*wrapper for native Win32 critical sections*/
+class CriticalSection
+{
+public:
+	inline CriticalSection(void)
+	{
+		MessageBoxA(0, "Critical Section initialized!", "Lock", MB_OK);
+		InitializeCriticalSection(&m_win32criticalSection);
+	}
+
+	inline ~CriticalSection(void)
+	{
+		DeleteCriticalSection(&m_win32criticalSection);
+	}
+
+	inline void enter(void)
+	{
+		EnterCriticalSection(&m_win32criticalSection);
+	}
+
+	inline bool tryEnter(void)
+	{
+		return TryEnterCriticalSection(&m_win32criticalSection);
+	}
+
+	inline void leave(void)
+	{
+		LeaveCriticalSection(&m_win32criticalSection);
+	}
+
+protected:
+	CRITICAL_SECTION m_win32criticalSection;
+};
+
+/*RAII-style critical section locker*/
+class CSLocker
+{
+public:
+	inline CSLocker(CriticalSection &criticalSection)
+	:
+		m_criticalSection(criticalSection)
+	{
+		m_criticalSection.enter();
+	}
+
+	inline ~CSLocker(void)
+	{
+		m_criticalSection.leave();
+	}
+
+protected:
+	CriticalSection &m_criticalSection;
+};
+
+//===================================================================
+// WinMain entry point
+//===================================================================
+
+extern "C"
+{
+	int mainCRTStartup(void);
+
+	int win32EntryPoint(void)
+	{
+		if(!(DOUBLESCANNER_DEBUG))
+		{
+			BOOL debuggerPresent = TRUE;
+			if(!CheckRemoteDebuggerPresent(GetCurrentProcess(), &debuggerPresent))
+			{
+				debuggerPresent = FALSE;
+			}
+			if(debuggerPresent || IsDebuggerPresent())
+			{
+				MessageBoxW(NULL, L"Not a debug build. Unload debugger and try again!", L"Debugger", MB_TOPMOST | MB_ICONSTOP);
+				return -1;
+			}
+			else
+			{
+				return mainCRTStartup();
+			}
+		}
+		else
+		{
+			return mainCRTStartup();
+		}
+	}
+}
+
+//===================================================================
+// Error Handlers
+//===================================================================
+
+static CriticalSection g_bFatalFlag;
 
 static void my_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
 {
@@ -78,17 +171,33 @@ void initErrorHandlers()
 	}
 }
 
+void crashHandler(const char *message)
+{
+	if(g_bFatalFlag.tryEnter())
+	{
+		MessageBoxA(NULL, message, "GURU MEDITATION", MB_OK | MB_ICONERROR | MB_TASKMODAL | MB_TOPMOST | MB_SETFOREGROUND);
+	}
+
+	for(;;)
+	{
+		TerminateProcess(GetCurrentProcess(), 666);
+	}
+}
+
+//===================================================================
+// Console Support
+//===================================================================
+
+static CriticalSection g_consoleLock;
+static volatile HANDLE g_hConsole = INVALID_HANDLE_VALUE;
+
 void initConsole(void)
 {
-	while(_InterlockedExchange(&g_consoleLock, 1L) != 0L)
-	{
-		Sleep(1);
-	}
+	CSLocker csLocker(g_consoleLock);
 
 	if((g_hConsole != NULL) && (g_hConsole != INVALID_HANDLE_VALUE))
 	{
-		_InterlockedExchange(&g_consoleLock, 0L);
-		return;
+		return; /*console already initialized*/
 	}
 
 	if(AllocConsole())
@@ -130,8 +239,6 @@ void initConsole(void)
 			}
 		}
 	}
-
-	_InterlockedExchange(&g_consoleLock, 0L);
 }
 
 void printConsole(const char* text, const int &logLevel)
@@ -143,15 +250,11 @@ void printConsole(const char* text, const int &logLevel)
 		FOREGROUND_RED | FOREGROUND_INTENSITY,
 	};
 
-	while(_InterlockedExchange(&g_consoleLock, 1L) != 0L)
-	{
-		Sleep(1);
-	}
+	CSLocker csLocker(g_consoleLock);
 
 	if((g_hConsole == NULL) || (g_hConsole == INVALID_HANDLE_VALUE))
 	{
-		_InterlockedExchange(&g_consoleLock, 0L);
-		return;
+		return; /*console not ready*/
 	}
 
 	if((logLevel >= 0) && (logLevel <= 2))
@@ -166,24 +269,12 @@ void printConsole(const char* text, const int &logLevel)
 
 	DWORD written;
 	WriteConsoleA(g_hConsole, buffer, len+1, &written, NULL);
-
-	_InterlockedExchange(&g_consoleLock, 0L);
 }
 
-void crashHandler(const char *message)
-{
-	static volatile long bFatalFlag = 0L;
-	
-	if(_InterlockedExchange(&bFatalFlag, 1L) == 0L)
-	{
-		MessageBoxA(NULL, message, "GURU MEDITATION", MB_OK | MB_ICONERROR | MB_TASKMODAL | MB_TOPMOST | MB_SETFOREGROUND);
-	}
+//===================================================================
+// Utility Functions
+//===================================================================
 
-	for(;;)
-	{
-		TerminateProcess(GetCurrentProcess(), 666);
-	}
-}
 
 quint32 getCurrentThread(void)
 {

@@ -16,11 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Config.cpp" />
-    <ClCompile Include="src\extra\qtmain_win.cpp">
-      <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWChar_tAsBuiltInType>
-      <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Release_Static|Win32'">false</TreatWChar_tAsBuiltInType>
-      <TreatWChar_tAsBuiltInType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWChar_tAsBuiltInType>
-    </ClCompile>
     <ClCompile Include="src\Model_Duplicates.cpp" />
     <ClCompile Include="src\Taskbar.cpp" />
     <ClCompile Include="src\Thread_DirectoryScanner.cpp" />
@@ -225,6 +220,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)\etc\VLD\lib\Win32</AdditionalLibraryDirectories>
       <AdditionalDependencies>QtCored4.lib;QtGuid4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>win32EntryPoint</EntryPointSymbol>
     </Link>
     <PreBuildEvent>
       <Command>del $(IntermediateOutputPath)\Config.obj</Command>
@@ -256,6 +252,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(SolutionDir)\etc\VLD\lib\Win32</AdditionalLibraryDirectories>
       <AdditionalDependencies>QtCore4.lib;QtGui4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>win32EntryPoint</EntryPointSymbol>
     </Link>
     <PreBuildEvent>
       <Command>del $(IntermediateOutputPath)\Config.obj</Command>
@@ -290,6 +287,7 @@
       <AdditionalDependencies>QtCore.lib;QtGui.lib;QtSvg.lib;qtmain.lib;qsvg.lib;qico.lib;qtga.lib;Winmm.lib;imm32.lib;ws2_32.lib;Shlwapi.lib;EncodePointer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <EntryPointSymbol>win32EntryPoint</EntryPointSymbol>
     </Link>
     <PreBuildEvent>
       <Command>del $(IntermediateOutputPath)\Config.obj</Command>
