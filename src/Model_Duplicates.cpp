@@ -33,6 +33,7 @@
 #include "System.h"
 
 static const QString EMPTY_STRING;
+static const QByteArray EMPTY_BYTEARRAY;
 static const qint64 ZERO_SIZE = 0;
 
 //===================================================================
@@ -377,6 +378,22 @@ const qint64 &DuplicatesModel::getFileSize(const QModelIndex &index) const
 	}
 
 	return ZERO_SIZE;
+}
+
+const QByteArray &DuplicatesModel::getGroupHash(const QModelIndex &index) const
+{
+	if(index.isValid())
+	{
+		if(DuplicateItem *currentItem = static_cast<DuplicateItem*>(index.internalPointer()))
+		{
+			if(DuplicateItem_Group *currentGroup = dynamic_cast<DuplicateItem_Group*>(currentItem))
+			{
+				return currentGroup->getHash();
+			}
+		}
+	}
+
+	return EMPTY_BYTEARRAY;
 }
 
 QString DuplicatesModel::toString(void)

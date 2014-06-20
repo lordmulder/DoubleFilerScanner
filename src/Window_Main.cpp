@@ -679,6 +679,7 @@ void MainWindow::autoClean(void)
 
 	qint64 spaceSaved = 0;
 	const int groupCount = m_model->rowCount();
+	qDebug("[Automatic Clean-Up]");
 
 	for(int i = 0; i < groupCount; i++)
 	{
@@ -687,6 +688,7 @@ void MainWindow::autoClean(void)
 		const QModelIndex currentGroup = m_model->index(i, 0);
 		if(currentGroup.isValid())
 		{
+			qDebug("Deleting duplicates for %s", m_model->getGroupHash(currentGroup).toHex().constData());
 			if(!DELETE_ALL_BUT_ONE(m_model, currentGroup, &spaceSaved))
 			{
 				qWarning("Failed to clean-up current duplicates group! (row %d)", i);
@@ -698,6 +700,8 @@ void MainWindow::autoClean(void)
 			break;
 		}
 	}
+
+	qDebug("Clean-up is complete.\n");
 
 	setMenuItemsEnabled(true);
 	setButtonsEnabled(true);

@@ -51,7 +51,6 @@ class CriticalSection
 public:
 	inline CriticalSection(void)
 	{
-		MessageBoxA(0, "Critical Section initialized!", "Lock", MB_OK);
 		InitializeCriticalSection(&m_win32criticalSection);
 	}
 
@@ -138,6 +137,7 @@ extern "C"
 //===================================================================
 
 static CriticalSection g_bFatalFlag;
+static const DWORD g_mainThread = GetCurrentThreadId();
 
 static void my_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
 {
@@ -173,10 +173,25 @@ void initErrorHandlers()
 
 void crashHandler(const char *message)
 {
-	if(g_bFatalFlag.tryEnter())
+	if(!g_bFatalFlag.tryEnter())
 	{
-		MessageBoxA(NULL, message, "GURU MEDITATION", MB_OK | MB_ICONERROR | MB_TASKMODAL | MB_TOPMOST | MB_SETFOREGROUND);
+		TerminateThread(GetCurrentThread(), DWORD(-1));
+		return; /*not the first invokation*/
 	}
+
+	if(g_mainThread != GetCurrentThreadId())
+	{
+		if(HANDLE hThreadMain = OpenThread(THREAD_TERMINATE | THREAD_QUERY_INFORMATION , FALSE, g_mainThread))
+		{
+			DWORD exitCodeMain;
+			if(GetExitCodeThread(hThreadMain, &exitCodeMain))
+			{
+				if(exitCodeMain == STILL_ACTIVE) TerminateThread(hThreadMain, DWORD(-1));
+			}
+		}
+	}
+
+	MessageBoxA(NULL, message, "GURU MEDITATION", MB_OK | MB_ICONERROR | MB_TASKMODAL | MB_TOPMOST | MB_SETFOREGROUND);
 
 	for(;;)
 	{
