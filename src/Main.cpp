@@ -54,8 +54,11 @@ static void msg_handler(QtMsgType type, const char *msg)
 		printConsole(msg, 1);
 		break;
 	case QtCriticalMsg:
+		printConsole(msg, 2);
+		break;
 	case QtFatalMsg:
 		printConsole(msg, 2);
+		crashHandler(msg);
 		break;
 	default:
 		printConsole(msg, 0);

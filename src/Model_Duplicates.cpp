@@ -415,7 +415,7 @@ void DuplicatesModel::clear(void)
 	endResetModel();
 }
 
-void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList &files)
+void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList &files, const qint64 &size)
 {
 	if(!files.isEmpty())
 	{
@@ -423,8 +423,7 @@ void DuplicatesModel::addDuplicate(const QByteArray &hash, const QStringList &fi
 		DuplicateItem_Group *group = new DuplicateItem_Group(m_root, hash);
 		for(QStringList::ConstIterator iterFile = files.constBegin(); iterFile != files.constEnd(); iterFile++)
 		{
-			const qint64 fileSize = QFileInfo(*iterFile).size();
-			new DuplicateItem_File(group, (*iterFile), fileSize);
+			new DuplicateItem_File(group, (*iterFile), size);
 		}
 		endInsertRows();
 	}

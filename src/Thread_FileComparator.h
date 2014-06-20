@@ -44,7 +44,7 @@ public:
 	virtual ~FileComparatorTask(void);
 
 signals:
-	void fileAnalyzed(const QByteArray &hash, const QString &path);
+	void fileAnalyzed(const QByteArray &hash, const QString &path, const qint64 &fileSize);
 
 protected:
 	virtual void run(void);
@@ -66,11 +66,11 @@ public:
 	void addFiles(const QStringList &files);
 
 private slots:
-	void fileDone(const QByteArray &hash, const QString &path);
+	void fileDone(const QByteArray &hash, const QString &path, const qint64 &fileSize);
 
 signals:
 	void progressChanged(const int &progress);
-	void duplicateFound(const QByteArray &hash, const QStringList &path);
+	void duplicateFound(const QByteArray &hash, const QStringList &path, const qint64 size);
 
 protected:
 	virtual void run(void);
@@ -79,9 +79,11 @@ protected:
 	QThreadPool *m_pool;
 
 	QQueue<QString> m_files;
-	QHash<QByteArray, QString> m_hashes;
 	quint64 m_pendingTasks;
-	
+
+	QHash<QByteArray, QString> m_hashes;
+	QHash<QByteArray, qint64> m_fileSizes;
+
 	int m_totalFileCount;
 	int m_completedFileCount;
 	int m_progressValue;

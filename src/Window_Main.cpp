@@ -172,7 +172,7 @@ MainWindow::MainWindow(void)
 	m_fileComparator = new FileComparator(&m_abortFlag, threadCount);
 	connect(m_fileComparator, SIGNAL(finished()), this, SLOT(fileComparatorFinished()), Qt::QueuedConnection);
 	connect(m_fileComparator, SIGNAL(progressChanged(int)), this, SLOT(fileComparatorProgressChanged(int)), Qt::QueuedConnection);
-	connect(m_fileComparator, SIGNAL(duplicateFound(const QByteArray, const QStringList)), m_model, SLOT(addDuplicate(const QByteArray, const QStringList)), Qt::BlockingQueuedConnection);
+	connect(m_fileComparator, SIGNAL(duplicateFound(const QByteArray&, const QStringList&, const qint64&)), m_model, SLOT(addDuplicate(const QByteArray, const QStringList, const qint64&)), Qt::BlockingQueuedConnection);
 
 	//Setup tree view
 	ui->treeView->setExpandsOnDoubleClick(false);

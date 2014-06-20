@@ -66,7 +66,7 @@ public:
 	bool exportToFile(const QString &outFile, const int &format);
 
 public slots:
-	void addDuplicate(const QByteArray &hash, const QStringList &files);
+	void addDuplicate(const QByteArray &hash, const QStringList &files, const qint64 &size);
 
 protected:
 	DuplicateItem *m_root;

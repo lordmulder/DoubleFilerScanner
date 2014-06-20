@@ -5,7 +5,7 @@ Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.
 Version History
 ------------------------------------------------------------------------------
 
-Version 2.02 [2014-??-??]
+Version 2.02 [2014-06-20]
 - Added automatic clean-up wizard
 - Display the number of duplicates per group
 - Display the size of each file

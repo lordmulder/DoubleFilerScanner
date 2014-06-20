@@ -78,6 +78,8 @@ void FileComparator::run(void)
 	//qWarning("FileComparator::run: Current thread id = %u", getCurrentThread());
 
 	m_hashes.clear();
+	m_fileSizes.clear();
+
 	m_pendingTasks = 0;
 
 	m_completedFileCount = 0;
@@ -119,12 +121,13 @@ void FileComparator::run(void)
 
 		for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
 		{
-			qDebug("%s -> %d", iter->toHex().constData(), m_hashes.count(*iter));
-			if(m_hashes.count(*iter) > 1)
+			const int count = m_hashes.count(*iter);
+			qDebug("%s -> %d", iter->toHex().constData(), count);
+			if(count > 1)
 			{
-				QStringList values = m_hashes.values(*iter);
+				QList<QString> values = m_hashes.values(*iter);
 				qSort(values.begin(), values.end(), caseInsensitiveLessThan);
-				emit duplicateFound((*iter), values);
+				emit duplicateFound((*iter), values, m_fileSizes.value((*iter), 0));
 				duplicateCount++;
 			}
 		}
@@ -133,24 +136,36 @@ void FileComparator::run(void)
 		emit progressChanged(100);
 	}
 
+	m_hashes.clear();
+	m_fileSizes.clear();
+
 	qDebug("Thread will exit!\n");
 }
 
 void FileComparator::scanNextFile(const QString path)
 {
 	FileComparatorTask *task = new FileComparatorTask(path, m_abortFlag);
-	if(connect(task, SIGNAL(fileAnalyzed(const QByteArray&, const QString&)), this, SLOT(fileDone(const QByteArray&, const QString&)), Qt::BlockingQueuedConnection))
+	if(connect(task, SIGNAL(fileAnalyzed(const QByteArray&, const QString&, const qint64&)), this, SLOT(fileDone(const QByteArray&, const QString&, const qint64&)), Qt::BlockingQueuedConnection))
 	{
 		m_pendingTasks++;
 		m_pool->start(task);
 	}
 }
 
-void FileComparator::fileDone(const QByteArray &hash, const QString &path)
+void FileComparator::fileDone(const QByteArray &hash, const QString &path, const qint64 &fileSize)
 {
-	if(!(hash.isEmpty() || path.isEmpty()))
+	if(!(hash.isEmpty() || path.isEmpty() || (fileSize < 0)))
 	{
 		m_hashes.insertMulti(hash, path);
+		
+		if(!m_fileSizes.contains(hash))
+		{
+			m_fileSizes.insert(hash, fileSize); /*store new file size*/
+		}
+		else if(m_fileSizes.value(hash) != fileSize)
+		{
+			qFatal("Madness: SHA-1 collission has been detected!");
+		}
 	}
 
 	const int progress = qRound(double(++m_completedFileCount) / double(m_totalFileCount) * 99.0);
@@ -206,7 +221,7 @@ void FileComparatorTask::run(void)
 {
 	if(*m_abortFlag)
 	{
-		emit fileAnalyzed(QByteArray(), QString());
+		emit fileAnalyzed(QByteArray(), QString(), -1);
 	}
 	
 	qDebug("%s", m_filePath.toUtf8().constData());
@@ -215,24 +230,26 @@ void FileComparatorTask::run(void)
 
 	if(file.open(QIODevice::ReadOnly))
 	{
+		qint64 fileSize = 0;
 		QCryptographicHash hash(QCryptographicHash::Sha1);
 
 		while(!(file.atEnd() || (file.error() != QFile::NoError) || (*m_abortFlag)))
 		{
-			const QByteArray buffer = file.read(1048576);
+			const QByteArray buffer = file.read(4096 /*1048576*/);
 			if(buffer.size() > 0)
 			{
 				hash.addData(buffer);
+				fileSize += buffer.size();
 			}
+		}
+		
+		if((file.error() == QFile::NoError) && (!(*m_abortFlag)))
+		{
+			emit fileAnalyzed(hash.result(), m_filePath, fileSize);
+			return;
 		}
 
 		file.close();
-
-		if(!(*m_abortFlag))
-		{
-			emit fileAnalyzed(hash.result(), m_filePath);
-			return;
-		}
 	}
 
 	if(!(*m_abortFlag))
@@ -240,5 +257,5 @@ void FileComparatorTask::run(void)
 		qWarning("Failed to open: %s", m_filePath.toUtf8().constData());
 	}
 
-	emit fileAnalyzed(QByteArray(), QString());
+	emit fileAnalyzed(QByteArray(), QString(), -1);
 }
