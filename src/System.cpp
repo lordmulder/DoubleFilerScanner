@@ -136,8 +136,9 @@ extern "C"
 // Error Handlers
 //===================================================================
 
-static CriticalSection g_bFatalFlag;
 static const DWORD g_mainThread = GetCurrentThreadId();
+static CriticalSection g_crashLock;
+static volatile bool g_crashFlag = true;
 
 static void my_invalid_param_handler(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t)
 {
@@ -153,7 +154,7 @@ static void my_signal_handler(int signal_num)
 static LONG WINAPI my_exception_handler(struct _EXCEPTION_POINTERS*)
 {
 	crashHandler("Unhandeled exception handler invoked, application will exit!");
-	return LONG_MAX;
+	return EXCEPTION_EXECUTE_HANDLER;
 }
 
 void initErrorHandlers()
@@ -171,27 +172,39 @@ void initErrorHandlers()
 	}
 }
 
+static DWORD WINAPI crashHelper(LPVOID lpParameter)
+{
+	MessageBoxA(NULL, (LPCSTR) lpParameter, "GURU MEDITATION", MB_OK | MB_ICONERROR | MB_TASKMODAL | MB_TOPMOST | MB_SETFOREGROUND);
+	return 0;
+}
+
 void crashHandler(const char *message)
 {
-	if(!g_bFatalFlag.tryEnter())
+	if(!g_crashLock.tryEnter())
 	{
-		TerminateThread(GetCurrentThread(), DWORD(-1));
-		return; /*not the first invokation*/
+		TerminateThread(GetCurrentThread, 666);
+		return;
 	}
+	
+	if(!g_crashFlag)
+	{
+		return; /*prevent recursive invocation*/
+	}
+
+	g_crashFlag = false;
 
 	if(g_mainThread != GetCurrentThreadId())
 	{
-		if(HANDLE hThreadMain = OpenThread(THREAD_TERMINATE | THREAD_QUERY_INFORMATION , FALSE, g_mainThread))
+		if(HANDLE hThreadMain = OpenThread(THREAD_SUSPEND_RESUME, FALSE, g_mainThread))
 		{
-			DWORD exitCodeMain;
-			if(GetExitCodeThread(hThreadMain, &exitCodeMain))
-			{
-				if(exitCodeMain == STILL_ACTIVE) TerminateThread(hThreadMain, DWORD(-1));
-			}
+			SuspendThread(hThreadMain); /*stop main thread*/
 		}
 	}
 
-	MessageBoxA(NULL, message, "GURU MEDITATION", MB_OK | MB_ICONERROR | MB_TASKMODAL | MB_TOPMOST | MB_SETFOREGROUND);
+	if(HANDLE hThread = CreateThread(NULL, 0, crashHelper, (LPVOID) message, 0, NULL))
+	{
+		WaitForSingleObject(hThread, INFINITE);
+	}
 
 	for(;;)
 	{
