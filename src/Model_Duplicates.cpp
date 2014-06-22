@@ -38,7 +38,7 @@ static const QString EMPTY_STRING;
 static const QByteArray EMPTY_BYTEARRAY;
 static const qint64 ZERO_SIZE = 0;
 
-static QString LIMIT_STR(const QString &str, const int maxLen)
+static inline QString LIMIT_STR(const QString &str, const int maxLen)
 {
 	const int len = str.length();
 	if(len > maxLen)
@@ -47,6 +47,18 @@ static QString LIMIT_STR(const QString &str, const int maxLen)
 		return (suffix > 0) ? (str.left(maxLen - (len - suffix)) + QChar(ushort(0x2026)) + str.mid(suffix + 1)) : (str.left(maxLen - 1) + QChar(ushort(0x2026)));
 	}
 	return str;
+}
+
+static inline QString FORMAT_NUMBER(qint64 value)
+{
+	QString formated;
+	while(value > 1000)
+	{
+		formated.prepend(QString().sprintf(",%03d", int(value % 1000i64)));
+		value /= 1000i64;
+	}
+	formated.prepend(QString().sprintf("%d", int(value % 1000i64)));
+	return formated;
 }
 
 //===================================================================
@@ -172,42 +184,6 @@ protected:
 
 DuplicatesModel::DuplicatesModel(void)
 {
-	qDebug("12345678901234567890");
-	qDebug("%s", LIMIT_STR("abcd.png",         12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcde.png",        12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdef.png",       12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefg.png",      12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefgh.png",     12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghi.png",    12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghij.png",   12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijk.png",  12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijkl.png", 12).toUtf8().constData());
-
-	qDebug("12345678901234567890");
-	qDebug("%s", LIMIT_STR("abcd.html",         12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcde.html",        12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdef.html",       12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefg.html",      12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefgh.html",     12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghi.html",    12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghij.html",   12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijk.html",  12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijkl.html", 12).toUtf8().constData());
-
-	qDebug("12345678901234567890");
-	qDebug("%s", LIMIT_STR("abcd",            12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcde",           12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdef",          12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefg",         12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefgh",        12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghi",       12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghij",      12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijk",     12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijkl",    12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijklm",   12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijklmn",  12).toUtf8().constData());
-	qDebug("%s", LIMIT_STR("abcdefghijklmno", 12).toUtf8().constData());
-
 	m_iconDflt = new QIcon(":/res/Icon_Bullet.png");
 	m_iconDupl = new QIcon(":/res/Icon_Duplicate.png");
 
@@ -316,7 +292,7 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 	case Qt::ToolTipRole:
 		if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
 		{
-			return QDir::toNativeSeparators(file->getFilePath());
+			return (index.column() < 2) ? QDir::toNativeSeparators(file->getFilePath()) : tr("%1 Bytes").arg(FORMAT_NUMBER(file->getFileSize()));
 		}
 		else if(DuplicateItem_Group *group = dynamic_cast<DuplicateItem_Group*>(item))
 		{
