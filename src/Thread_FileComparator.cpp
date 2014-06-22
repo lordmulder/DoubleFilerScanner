@@ -26,6 +26,8 @@
 #include "Config.h"
 #include "System.h"
 
+#include "strnatcmp/strnatcmp.h"
+
 #include <QThreadPool>
 #include <QDir>
 #include <QDirIterator>
@@ -38,9 +40,24 @@
 static const quint64 MAX_ENQUEUED_TASKS = 128;
 static const QHash<QByteArray, QStringList> EMPTY_DUPLICATES_LIST;
 
-static bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
+static bool filePathLessThan(const QString &s1, const QString &s2)
 {
-	return s1.toLower() < s2.toLower();
+	int result = 0;
+
+	const wchar_t *file1 = wcsrchr((const wchar_t*) s1.utf16(), L'/');
+	const wchar_t *file2 = wcsrchr((const wchar_t*) s2.utf16(), L'/');
+
+	if(file1 && file2)
+	{
+		result = strnatcasecmp(++file1, ++file2);
+	}
+
+	if(result == 0)
+	{
+		result = strnatcasecmp((const wchar_t*) s1.utf16(), (const wchar_t*) s2.utf16());
+	}
+
+	return (result < 0);
 }
 
 //=======================================================================================
@@ -122,11 +139,11 @@ void FileComparator::run(void)
 		for(QList<QByteArray>::ConstIterator iter = keys.constBegin(); iter != keys.constEnd(); iter++)
 		{
 			const int count = m_hashes.count(*iter);
-			qDebug("%s -> %d", iter->toHex().constData(), count);
 			if(count > 1)
 			{
+				qDebug("%s -> %d", iter->toHex().constData(), count);
 				QList<QString> values = m_hashes.values(*iter);
-				qSort(values.begin(), values.end(), caseInsensitiveLessThan);
+				qSort(values.begin(), values.end(), filePathLessThan);
 				emit duplicateFound((*iter), values, m_fileSizes.value((*iter), 0));
 				duplicateCount++;
 			}
