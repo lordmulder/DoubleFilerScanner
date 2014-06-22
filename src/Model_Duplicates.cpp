@@ -32,9 +32,22 @@
 #include "Utilities.h"
 #include "System.h"
 
+#include <cassert>
+
 static const QString EMPTY_STRING;
 static const QByteArray EMPTY_BYTEARRAY;
 static const qint64 ZERO_SIZE = 0;
+
+static QString LIMIT_STR(const QString &str, const int maxLen)
+{
+	const int len = str.length();
+	if(len > maxLen)
+	{
+		const int suffix = str.lastIndexOf(L'.');
+		return (suffix > 0) ? (str.left(maxLen - (len - suffix)) + QChar(ushort(0x2026)) + str.mid(suffix + 1)) : (str.left(maxLen - 1) + QChar(ushort(0x2026)));
+	}
+	return str;
+}
 
 //===================================================================
 // Duplicates Items
@@ -92,11 +105,6 @@ public:
 		return ITEM_ROOT;
 	}
 
-	virtual QString toString(void)
-	{
-		return QString();
-	}
-
 protected:
 	DuplicateItem *const m_parent;
 	QList<DuplicateItem*> m_childeren;
@@ -124,11 +132,6 @@ public:
 		return ITEM_GROUP;
 	}
 
-	virtual QString toString(void)
-	{
-		return QString().sprintf("%s (x%d)", m_hash.toHex().constData(), m_childeren.count());
-	}
-
 	inline const QByteArray &getHash(void) const { return m_hash; }
 
 protected:
@@ -141,7 +144,7 @@ public:
 	DuplicateItem_File(DuplicateItem *const parent, const QString &filePath, const qint64 &fileSize)
 	:
 		DuplicateItem(parent),
-		m_filePath(filePath),
+		m_fileInfo(filePath),
 		m_fileSize(fileSize)
 	{
 		/*nithing to do here*/
@@ -152,17 +155,14 @@ public:
 		return ITEM_FILE;
 	}
 
-	virtual QString toString(void)
-	{
-		return QDir::toNativeSeparators(m_filePath);
-	}
-
-	inline const QString &getFilePath(void) const    { return m_filePath;     }
-	inline void setFilePath(const QString &filePath) { m_filePath = filePath; }
-	inline const qint64 &getFileSize(void) const     { return m_fileSize;     }
+	inline const QString getName(void) const         { return m_fileInfo.fileName();         }
+	inline const QString getPath(void) const         { return m_fileInfo.absolutePath();     }
+	inline const QString getFilePath(void) const     { return m_fileInfo.absoluteFilePath(); }
+	inline void setFilePath(const QString &filePath) { m_fileInfo.setFile(filePath);         }
+	inline const qint64 &getFileSize(void) const     { return m_fileSize;                    }
 
 protected:
-	QString m_filePath;
+	QFileInfo m_fileInfo;
 	const qint64 m_fileSize;
 };
 
@@ -172,6 +172,42 @@ protected:
 
 DuplicatesModel::DuplicatesModel(void)
 {
+	qDebug("12345678901234567890");
+	qDebug("%s", LIMIT_STR("abcd.png",         12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcde.png",        12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdef.png",       12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefg.png",      12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefgh.png",     12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghi.png",    12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghij.png",   12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijk.png",  12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijkl.png", 12).toUtf8().constData());
+
+	qDebug("12345678901234567890");
+	qDebug("%s", LIMIT_STR("abcd.html",         12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcde.html",        12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdef.html",       12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefg.html",      12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefgh.html",     12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghi.html",    12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghij.html",   12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijk.html",  12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijkl.html", 12).toUtf8().constData());
+
+	qDebug("12345678901234567890");
+	qDebug("%s", LIMIT_STR("abcd",            12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcde",           12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdef",          12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefg",         12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefgh",        12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghi",       12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghij",      12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijk",     12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijkl",    12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijklm",   12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijklmn",  12).toUtf8().constData());
+	qDebug("%s", LIMIT_STR("abcdefghijklmno", 12).toUtf8().constData());
+
 	m_iconDflt = new QIcon(":/res/Icon_Bullet.png");
 	m_iconDupl = new QIcon(":/res/Icon_Duplicate.png");
 
@@ -244,7 +280,7 @@ int DuplicatesModel::rowCount(const QModelIndex &parent) const
 
 int DuplicatesModel::columnCount(const QModelIndex &parent) const
 {
-	return 2;
+	return 3;
 }
 
 QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
@@ -255,46 +291,55 @@ QVariant DuplicatesModel::data(const QModelIndex &index, int role) const
 		item = static_cast<DuplicateItem*>(index.internalPointer());
 	}
 
-	switch(index.column())
+	switch(role)
 	{
-	case 0:
-		switch(role)
+	/* ============= DISPLAY ROLE ============= */
+	case Qt::DisplayRole:
+		if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
 		{
-		case Qt::DisplayRole:
-			return item->toString();
-		case Qt::ToolTipRole:
-			if(DuplicateItem_Group *group = dynamic_cast<DuplicateItem_Group*>(item))
+			switch(index.column())
 			{
-				return QString().sprintf("SHA-1: %s", group->getHash().toHex().constData());
+				case 0: return LIMIT_STR(file->getName(), 32);
+				case 1: return QDir::toNativeSeparators(file->getPath());
+				case 2: return Utilities::sizeToString(file->getFileSize());
 			}
-			return item->toString();
-		case Qt::FontRole:
-			return (item->type() == ITEM_GROUP) ? (*m_fontBold) : (*m_fontDflt);
-		case Qt::DecorationRole:
+		}
+		else if(DuplicateItem_Group *group = dynamic_cast<DuplicateItem_Group*>(item))
+		{
+			if(index.column() == 0)
+			{
+				return QString().sprintf("%.16s (%c%d)", group->getHash().toHex().constData(), ushort(0xd7), group->childCount());
+			}
+		}
+		break;
+	/* ============= TOOL-TIP ROLE ============= */
+	case Qt::ToolTipRole:
+		if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
+		{
+			return QDir::toNativeSeparators(file->getFilePath());
+		}
+		else if(DuplicateItem_Group *group = dynamic_cast<DuplicateItem_Group*>(item))
+		{
+			return QString().sprintf("SHA-1 Digest: %s", group->getHash().toHex().constData());
+		}
+		break;
+	/* ============= DECORATION ROLE ============= */
+	case Qt::DecorationRole:
+		if(index.column() == 0)
+		{
 			return (item->type() == ITEM_GROUP) ? (*m_iconDupl) : (*m_iconDflt);
 		}
 		break;
-	case 1:
-		switch(role)
+	/* ============= TEXT-ALIGNMENT ROLE ============= */
+	case Qt::TextAlignmentRole:
+		if(index.column() == 2)
 		{
-		case Qt::DisplayRole:
-			if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
-			{
-				return Utilities::sizeToString(file->getFileSize());
-			}
-			break;
-		case Qt::ToolTipRole:
-			if(DuplicateItem_File *file = dynamic_cast<DuplicateItem_File*>(item))
-			{
-				return tr("%1 byte").arg(QString::number(file->getFileSize()));
-			}
-			break;
-		case Qt::TextAlignmentRole:
 			return QVariant(Qt::AlignRight | Qt::AlignVCenter);
-		case Qt::FontRole:
-			return (*m_fontDflt);
 		}
 		break;
+	/* ============= FONT ROLE ============= */
+	case Qt::FontRole:
+		return (item->type() == ITEM_GROUP) ? (*m_fontBold) : (*m_fontDflt);
 	}
 
 	return QVariant();
@@ -312,6 +357,8 @@ QVariant DuplicatesModel::headerData(int section, Qt::Orientation orientation, i
 			case 0:
 				return tr("File Name");
 			case 1:
+				return tr("Location");
+			case 2:
 				return tr("Size");
 			}
 		}
@@ -348,7 +395,7 @@ unsigned int DuplicatesModel::duplicateFileCount(const QModelIndex &index) const
 	return 0;
 }
 
-const QString &DuplicatesModel::getFilePath(const QModelIndex &index) const
+const QString DuplicatesModel::getFilePath(const QModelIndex &index) const
 {
 	if(index.isValid())
 	{

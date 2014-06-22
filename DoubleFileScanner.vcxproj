@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClCompile Include="src\Config.cpp" />
     <ClCompile Include="src\Model_Duplicates.cpp" />
+    <ClCompile Include="src\strnatcmp\strnatcmp.cpp" />
     <ClCompile Include="src\Taskbar.cpp" />
     <ClCompile Include="src\Thread_DirectoryScanner.cpp" />
     <ClCompile Include="src\Thread_FileComparator.cpp" />
@@ -25,6 +26,7 @@
     <ClCompile Include="src\Window_Directories.cpp" />
     <ClCompile Include="src\Window_Main.cpp" />
     <ClCompile Include="src\System.cpp" />
+    <ClInclude Include="src\strnatcmp\strnatcmp.h" />
     <ClInclude Include="src\Utilities.h" />
     <ClCompile Include="tmp\Common\moc\MOC_Model_Duplicates.cpp" />
     <ClCompile Include="tmp\Common\moc\MOC_Thread_DirectoryScanner.cpp" />

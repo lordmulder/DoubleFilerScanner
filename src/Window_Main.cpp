@@ -61,8 +61,9 @@ static void SETUP_MODEL(QTreeView *view, QAbstractItemModel *model)
 	view->setModel(model);
 	if(QHeaderView *header = view->header())
 	{
-		header->setResizeMode(0, QHeaderView::Stretch);
-		header->setResizeMode(1, QHeaderView::ResizeToContents);
+		header->setResizeMode(0, QHeaderView::ResizeToContents);
+		header->setResizeMode(1, QHeaderView::Stretch);
+		header->setResizeMode(2, QHeaderView::ResizeToContents);
 		header->setMovable(false);
 		header->setClickable(false);
 	}
@@ -130,17 +131,14 @@ MainWindow::MainWindow(void)
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
 
+	//Setup title
+	setWindowTitle(tr("Double File Scanner %1").arg(QString().sprintf("v%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
+
 	//Setup UI
 	ui->setupUi(this);
 
 	//Setup window icon
 	changeWindowIcon(this, QIcon(":/res/Logo.png"));
-
-	//Setup title
-	setWindowTitle(tr("Double File Scanner %1").arg(QString().sprintf("v%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
-
-	//Setup size
-	setMinimumSize(size());
 
 	//Setup button connections
 	connect(ui->buttonStart, SIGNAL(clicked()), this, SLOT(startScan()));

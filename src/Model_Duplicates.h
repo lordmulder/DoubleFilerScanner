@@ -55,7 +55,7 @@ public:
 
 	unsigned int duplicateCount(void) const;
 	unsigned int duplicateFileCount(const QModelIndex &index) const;
-	const QString &getFilePath(const QModelIndex &index) const;
+	const QString getFilePath(const QModelIndex &index) const;
 	const qint64 &getFileSize(const QModelIndex &index) const;
 	const QByteArray &getGroupHash(const QModelIndex &index) const;
 	QString toString(void);
