@@ -131,11 +131,11 @@ MainWindow::MainWindow(void)
 	//Setup window flags
 	setWindowFlags((windowFlags() | Qt::CustomizeWindowHint) & ~Qt::WindowMaximizeButtonHint);
 
-	//Setup title
-	setWindowTitle(tr("Double File Scanner %1").arg(QString().sprintf("v%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
-
 	//Setup UI
 	ui->setupUi(this);
+
+	//Setup title
+	setWindowTitle(tr("Double File Scanner %1").arg(QString().sprintf("v%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
 
 	//Setup window icon
 	changeWindowIcon(this, QIcon(":/res/Logo.png"));
