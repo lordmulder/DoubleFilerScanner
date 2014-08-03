@@ -58,7 +58,10 @@ static void msg_handler(QtMsgType type, const char *msg)
 		break;
 	case QtFatalMsg:
 		printConsole(msg, 2);
-		crashHandler(msg);
+		if(!DOUBLESCANNER_DEBUG)
+		{
+			crashHandler(msg);
+		}
 		break;
 	default:
 		printConsole(msg, 0);

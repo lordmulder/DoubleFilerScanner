@@ -180,11 +180,7 @@ static DWORD WINAPI crashHelper(LPVOID lpParameter)
 
 void crashHandler(const char *message)
 {
-	if(!g_crashLock.tryEnter())
-	{
-		TerminateThread(GetCurrentThread, 666);
-		return;
-	}
+	g_crashLock.enter();
 	
 	if(!g_crashFlag)
 	{

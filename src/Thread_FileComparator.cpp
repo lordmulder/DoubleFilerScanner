@@ -68,8 +68,11 @@ FileComparator::FileComparator(volatile bool *abortFlag, const int &threadCount)
 :
 	m_abortFlag(abortFlag)
 {
+	this->moveToThread(this);
+
 	m_pendingTasks = 0;
-	m_pool = new QThreadPool(this);
+	m_pool = new QThreadPool();
+	m_pauseFlag = false;
 
 	m_completedFileCount = 0;
 	m_totalFileCount = m_files.count();
@@ -79,8 +82,6 @@ FileComparator::FileComparator(volatile bool *abortFlag, const int &threadCount)
 	{
 		m_pool->setMaxThreadCount(qBound(1, threadCount, 64));
 	}
-
-	//qDebug("Using %d worker threads.", m_pool->maxThreadCount());
 }
 
 FileComparator::~FileComparator(void)
@@ -126,6 +127,7 @@ void FileComparator::run(void)
 	while(!m_pool->waitForDone(5000))
 	{
 		qWarning("Still have running taks -> waiting for completeion!");
+		//QEventLoop loop; loop.processEvents();
 	}
 
 	if(!(*m_abortFlag))
@@ -161,6 +163,8 @@ void FileComparator::run(void)
 
 void FileComparator::scanNextFile(const QString path)
 {
+	sleepWhilePaused();
+
 	FileComparatorTask *task = new FileComparatorTask(path, m_abortFlag);
 	if(connect(task, SIGNAL(fileAnalyzed(const QByteArray&, const QString&, const qint64&)), this, SLOT(fileDone(const QByteArray&, const QString&, const qint64&)), Qt::BlockingQueuedConnection))
 	{
@@ -218,6 +222,27 @@ void FileComparator::addFiles(const QStringList &files)
 	m_files << files;
 }
 
+void FileComparator::suspend(const bool bSuspend)
+{
+	m_pauseLock.lock();
+	if(m_pauseFlag != bSuspend)
+	{
+		m_pauseFlag = bSuspend;
+		m_pauseWait.wakeAll();
+	}
+	m_pauseLock.unlock();
+}
+
+void FileComparator::sleepWhilePaused(void)
+{
+	m_pauseLock.lock();
+	while(m_pauseFlag)
+	{
+		m_pauseWait.wait(&m_pauseLock);
+	}
+	m_pauseLock.unlock();
+}
+
 //=======================================================================================
 // File Comparator Task
 //=======================================================================================
@@ -239,6 +264,7 @@ void FileComparatorTask::run(void)
 	if(*m_abortFlag)
 	{
 		emit fileAnalyzed(QByteArray(), QString(), -1);
+		return;
 	}
 	
 	qDebug("%s", m_filePath.toUtf8().constData());
@@ -259,14 +285,15 @@ void FileComparatorTask::run(void)
 				fileSize += buffer.size();
 			}
 		}
-		
-		if((file.error() == QFile::NoError) && (!(*m_abortFlag)))
+	
+		const QFile::FileError error = file.error();
+		file.close();
+
+		if((error == QFile::NoError) && (!(*m_abortFlag)))
 		{
 			emit fileAnalyzed(hash.result(), m_filePath, fileSize);
 			return;
 		}
-
-		file.close();
 	}
 
 	if(!(*m_abortFlag))

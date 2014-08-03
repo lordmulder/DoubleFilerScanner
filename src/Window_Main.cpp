@@ -123,7 +123,7 @@ MainWindow::MainWindow(void)
 	ui(new Ui::MainWindow())
 {
 	m_abortFlag = true;
-	m_unattendedFlag = false;
+	m_pauseFlag = m_unattendedFlag = false;
 	
 	//Determine threads count
 	const int threadCount = qBound(0, getEnvString("DBLSCAN_THREADS").toInt(), 64);
@@ -254,6 +254,15 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 			qWarning("Operation has been aborted by user!");
 			ui->label->setText(tr("Abortion has been request, terminating operation..."));
 			m_abortFlag = true;
+			m_directoryScanner->suspend(false);
+			m_fileComparator  ->suspend(false);
+		}
+	}
+	else if(e->key() == Qt::Key_Pause)
+	{
+		if(!m_abortFlag)
+		{
+			togglePause();
 		}
 	}
 
@@ -341,7 +350,9 @@ void MainWindow::startScan(void)
 	{
 		setButtonsEnabled(false);
 		setMenuItemsEnabled(false);
+		
 		m_abortFlag = false;
+		m_pauseFlag = false;
 
 		UNSET_MODEL(ui->treeView);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
@@ -352,6 +363,7 @@ void MainWindow::startScan(void)
 
 		m_directoryScanner->setRecursive(recursive);
 		m_directoryScanner->addDirectories(directories);
+		m_directoryScanner->suspend(false);
 		m_directoryScanner->start();
 
 		m_timer->start();
@@ -377,6 +389,7 @@ void MainWindow::directoryScannerFinished(void)
 	ui->label->setText(tr("%1 file(s) are being analyzed, this might take a few minutes...").arg(QString::number(files.count())));
 
 	m_fileComparator->addFiles(files);
+	m_fileComparator->suspend(false);
 	m_fileComparator->start();
 }
 
@@ -916,4 +929,24 @@ QString MainWindow::cleanFileName(const QString &fileName)
 {
 	QRegExp invalidChars("(\\\\|/|:|\\*|\\?|\"|<|>|\\|)");
 	return QString(fileName).replace(invalidChars, "_");
+}
+
+void MainWindow::togglePause(void)
+{
+	m_pauseFlag = (!m_pauseFlag);
+	if(m_pauseFlag)
+	{
+		qWarning("Operation has been suspende by user.");
+		m_unpauseText = ui->label->text();
+		ui->label->setText(tr("Operation has been suspended by user. Press 'pause' to proceed!"));
+		m_movie->stop();
+	}
+	else
+	{
+		qWarning("Operation has been resumed by user.");
+		ui->label->setText(m_unpauseText);
+		m_movie->start();
+	}
+	m_directoryScanner->suspend(m_pauseFlag);
+	m_fileComparator  ->suspend(m_pauseFlag);
 }

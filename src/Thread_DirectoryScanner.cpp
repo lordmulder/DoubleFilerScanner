@@ -45,15 +45,16 @@ DirectoryScanner::DirectoryScanner(volatile bool *abortFlag, const int &threadCo
 	m_abortFlag(abortFlag),
 	m_recusrive(recursive)
 {
+	this->moveToThread(this);
+
 	m_pendingTasks = 0;
-	m_pool = new QThreadPool(this);
+	m_pool = new QThreadPool();
+	m_pauseFlag = false;
 
 	if(threadCount > 0)
 	{
 		m_pool->setMaxThreadCount(qBound(1, threadCount, 64));
 	}
-
-	//qDebug("Using %d worker threads.", m_pool->maxThreadCount());
 }
 
 DirectoryScanner::~DirectoryScanner(void)
@@ -102,6 +103,8 @@ void DirectoryScanner::run(void)
 
 void DirectoryScanner::scanDirectory(const QString path)
 {
+	sleepWhilePaused();
+
 	DirectoryScannerTask *task = new DirectoryScannerTask(path, m_abortFlag);
 	if(connect(task, SIGNAL(directoryAnalyzed(const QStringList*, const QStringList*)), this, SLOT(directoryDone(const QStringList*, const QStringList*)), Qt::BlockingQueuedConnection))
 	{
@@ -181,6 +184,27 @@ const QStringList DirectoryScanner::getFiles(void) const
 
 	fileList.sort();
 	return fileList;
+}
+
+void DirectoryScanner::suspend(const bool bSuspend)
+{
+	m_pauseLock.lock();
+	if(m_pauseFlag != bSuspend)
+	{
+		m_pauseFlag = bSuspend;
+		m_pauseWait.wakeAll();
+	}
+	m_pauseLock.unlock();
+}
+
+void DirectoryScanner::sleepWhilePaused(void)
+{
+	m_pauseLock.lock();
+	while(m_pauseFlag)
+	{
+		m_pauseWait.wait(&m_pauseLock);
+	}
+	m_pauseLock.unlock();
 }
 
 //=======================================================================================

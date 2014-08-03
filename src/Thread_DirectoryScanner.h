@@ -27,6 +27,8 @@
 #include <QStringList>
 #include <QQueue>
 #include <QSet>
+#include <QMutex>
+#include <QWaitCondition>
 
 class QThreadPool;
 class QEventLoop;
@@ -64,6 +66,8 @@ public:
 	void setRecursive(const bool &recusrive);
 	void addDirectory(const QString &path);
 	void addDirectories(const QStringList &paths);
+	void suspend(const bool bSuspend);
+
 	const QStringList getFiles(void) const;
 
 private slots:
@@ -72,13 +76,18 @@ private slots:
 protected:
 	virtual void run(void);
 	void scanDirectory(const QString path);
-	
-	bool m_recusrive;
+	void sleepWhilePaused(void);
 
-	QThreadPool *m_pool;
+	bool m_recusrive;
+	bool m_pauseFlag;
+
+	QThreadPool*   m_pool;
+	QMutex         m_pauseLock;
+	QWaitCondition m_pauseWait;
+
 	QQueue<QString> m_pendingDirs;
-	QSet<QString> m_files;
-	quint64 m_pendingTasks;
+	QSet<QString>   m_files;
+	quint64         m_pendingTasks;
 
 	volatile bool *const m_abortFlag;
 };

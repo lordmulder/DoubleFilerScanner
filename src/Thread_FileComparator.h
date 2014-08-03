@@ -28,6 +28,8 @@
 #include <QQueue>
 #include <QHash>
 #include <QReadWriteLock>
+#include <QMutex>
+#include <QWaitCondition>
 
 class QThreadPool;
 class QEventLoop;
@@ -64,6 +66,7 @@ public:
 	virtual ~FileComparator(void);
 
 	void addFiles(const QStringList &files);
+	void suspend(const bool bSuspend);
 
 private slots:
 	void fileDone(const QByteArray &hash, const QString &path, const qint64 &fileSize);
@@ -75,8 +78,13 @@ signals:
 protected:
 	virtual void run(void);
 	void scanNextFile(const QString path);
+	void sleepWhilePaused(void);
 
-	QThreadPool *m_pool;
+	bool m_pauseFlag;
+
+	QThreadPool*   m_pool;
+	QMutex         m_pauseLock;
+	QWaitCondition m_pauseWait;
 
 	QQueue<QString> m_files;
 	quint64 m_pendingTasks;

@@ -75,6 +75,7 @@ protected:
 	virtual void dropEvent(QDropEvent *e);
 	virtual bool winEvent(MSG *message, long *result);
 
+private:
 	void centerWidget(QWidget *widget);
 	QLabel *makeLabel(QWidget *parent, const QString &fileName, const bool &hidden = true);
 	void updateProgress(const int &progress, const int &maxValue = 100);
@@ -83,6 +84,7 @@ protected:
 	void showSign(const int &id);
 	void handleCommandLineArgs(void);
 	QModelIndex getSelectedItem(void);
+	void togglePause(void);
 	
 	static QString cleanFileName(const QString &fileName);
 
@@ -95,9 +97,11 @@ protected:
 	QLabel *m_signQuiescent;
 
 	volatile bool m_abortFlag;
+	volatile bool m_pauseFlag;
 	volatile bool m_unattendedFlag;
 
 	QStringList m_droppedFolders;
+	QString m_unpauseText;
 
 	DuplicatesModel *m_model;
 	DirectoryScanner *m_directoryScanner;
