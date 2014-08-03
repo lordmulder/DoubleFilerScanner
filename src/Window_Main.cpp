@@ -122,8 +122,7 @@ MainWindow::MainWindow(void)
 :
 	ui(new Ui::MainWindow())
 {
-	m_abortFlag = true;
-	m_pauseFlag = m_unattendedFlag = false;
+	m_abortFlag = m_runningFlag = m_pauseFlag = m_unattendedFlag = false;
 	
 	//Determine threads count
 	const int threadCount = qBound(0, getEnvString("DBLSCAN_THREADS").toInt(), 64);
@@ -249,7 +248,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 {
 	if(e->key() == Qt::Key_Escape)
 	{
-		if(!m_abortFlag)
+		if(m_runningFlag)
 		{
 			qWarning("Operation has been aborted by user!");
 			ui->label->setText(tr("Abortion has been request, terminating operation..."));
@@ -260,7 +259,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 	}
 	else if(e->key() == Qt::Key_Pause)
 	{
-		if(!m_abortFlag)
+		if(m_runningFlag)
 		{
 			togglePause();
 		}
@@ -351,8 +350,8 @@ void MainWindow::startScan(void)
 		setButtonsEnabled(false);
 		setMenuItemsEnabled(false);
 		
-		m_abortFlag = false;
-		m_pauseFlag = false;
+		m_runningFlag = true;
+		m_abortFlag = m_pauseFlag = false;
 
 		UNSET_MODEL(ui->treeView);
 		ui->label->setText(tr("Searching for files and directories, please be patient..."));
@@ -376,6 +375,7 @@ void MainWindow::directoryScannerFinished(void)
 
 	if(m_abortFlag)
 	{
+		m_runningFlag = false;
 		m_timer->invalidate();
 		QApplication::beep();
 		ui->label->setText(tr("The operation has been aborted by the user!"));
@@ -395,6 +395,8 @@ void MainWindow::directoryScannerFinished(void)
 
 void MainWindow::fileComparatorFinished(void)
 {
+	m_runningFlag = false;
+
 	if(m_abortFlag)
 	{
 		m_timer->invalidate();
@@ -405,8 +407,6 @@ void MainWindow::fileComparatorFinished(void)
 		Taskbar::setTaskbarState(this, Taskbar::TaskbarErrorState);
 		return;
 	}
-	
-	m_abortFlag = true; /*to prevent an abort message after completion*/
 
 	if(m_timer->isValid())
 	{
@@ -680,10 +680,12 @@ void MainWindow::autoClean(void)
 		return;
 	}
 
+	m_abortFlag = false;
+	m_runningFlag = true;
+
 	setButtonsEnabled(false);
 	setMenuItemsEnabled(false);
-	m_abortFlag = false;
-
+	
 	UNSET_MODEL(ui->treeView);
 	ui->label->setText(tr("Automatic clean-up operation is in progress, please be patient..."));
 	showSign(-1);
@@ -712,6 +714,7 @@ void MainWindow::autoClean(void)
 		}
 	}
 
+	m_runningFlag = false;
 	qDebug("Clean-up is complete.\n");
 
 	setMenuItemsEnabled(true);
@@ -728,7 +731,6 @@ void MainWindow::autoClean(void)
 		ui->actionAutoClean->setEnabled(false);
 	}
 
-	m_abortFlag = true;
 	SETUP_MODEL(ui->treeView, m_model);
 	QApplication::beep();
 }

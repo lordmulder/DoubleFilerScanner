@@ -96,6 +96,7 @@ private:
 	QLabel *m_signCancelled;
 	QLabel *m_signQuiescent;
 
+	volatile bool m_runningFlag;
 	volatile bool m_abortFlag;
 	volatile bool m_pauseFlag;
 	volatile bool m_unattendedFlag;

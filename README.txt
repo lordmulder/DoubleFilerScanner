@@ -81,4 +81,15 @@ List of influential environment variables:
   DBLSCAN_THREADS     Set the number of worker threads (default: auto detect)
 
 
+------------------------------------------------------------------------------
+5. Frequently Asked Question
+------------------------------------------------------------------------------
+
+Q: Can the scanning process be aborted?
+A: Yes, simply press the 'ESC' key!
+  
+Q: Can the scanning process be suspended/resumed?
+A: Yes, simply press the 'Pause' key!
+
+
 E.O.F.
