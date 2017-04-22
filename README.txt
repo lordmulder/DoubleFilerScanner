@@ -47,16 +47,14 @@ Optionally, the list of duplicates can be exported to the XML or INI format.
 ------------------------------------------------------------------------------
 
 The following platforms are supported:
+- Windows 10, 32-Bit and 64-Bit versions
 - Windows 8 and 8.1, 32-Bit and 64-Bit versions
 - Windows 7, 32-Bit and 64-Bit versions
-- Windows XP, Service Pack 3 is required!
 
 Platforms that should work too, but are not tested extensively:
 - Windows Vista, 32-Bit and 64-Bit versions
+- Windows XP, Service Pack 3 is required!
 - Windows XP Professional x64 Edition, Service Pack 2 is required!
-
-Download Service Pack 3 for Windows XP here:
-http://www.microsoft.com/en-us/download/details.aspx?id=24
 
 
 ------------------------------------------------------------------------------
@@ -82,7 +80,21 @@ List of influential environment variables:
 
 
 ------------------------------------------------------------------------------
-5. Frequently Asked Question
+5. Source Code
+------------------------------------------------------------------------------
+
+Find the Double File Scanner source code at our official Git mirrors:
+- https://github.com/lordmulder/DoubleFilerScanner
+- https://gitlab.com/double-file-scanner/double-file-scanner
+- https://bitbucket.org/muldersoft/doubefilescanner
+- https://app.assembla.com/spaces/doublefilerscanner/
+
+More free software available at MuldeR's OpenSource Projects web-site:
+http://muldersoft.com/
+
+
+------------------------------------------------------------------------------
+6. Frequently Asked Question
 ------------------------------------------------------------------------------
 
 Q: Can the scanning process be aborted?
