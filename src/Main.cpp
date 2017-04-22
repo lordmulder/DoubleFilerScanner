@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Double File Scanner
-// Copyright (C) 2014 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2014-2017 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -106,7 +106,7 @@ static int double_file_scanner(int argc, char* argv[])
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 
 	qDebug("Double File Scanner, Version %u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH);
-	qDebug("Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.");
+	qDebug("Copyright (C) 2014-2017 LoRd_MuldeR <MuldeR2@GMX.de>. Some rights reserved.");
 	qDebug("Built on %s at %s with %s for Win-%s.\n", DOUBLESCANNER_BUILD_DATE, DOUBLESCANNER_BUILD_TIME, DOUBLESCANNER_COMPILER, DOUBLESCANNER_ARCH);
 
 	qDebug("This program is free software: you can redistribute it and/or modify");

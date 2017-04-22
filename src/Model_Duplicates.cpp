@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Double File Scanner
-// Copyright (C) 2014 LoRd_MuldeR <MuldeR2@GMX.de>
+// Copyright (C) 2014-2017 LoRd_MuldeR <MuldeR2@GMX.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -579,7 +579,7 @@ bool DuplicatesModel::exportToIni(const QString &outFile)
 	}
 
 	settings.setValue("generator", tr("Document created with Double File Scanner v%1").arg(QString().sprintf("%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH)));
-	settings.setValue("rights", tr("Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved."));
+	settings.setValue("rights", tr("Copyright (C) 2014-2017 LoRd_MuldeR <MuldeR2@GMX.de>. Some rights reserved."));
 
 	for(int i = 0; i < groupCount; i++)
 	{
@@ -627,7 +627,7 @@ bool DuplicatesModel::exportToXml(const QString &outFile)
 	QString tmpl(" %1 ");
 	stream.writeComment(tmpl.arg(tr("=====================================================================")));
 	stream.writeComment(tmpl.arg(tr("Document created with Double File Scanner v%1").arg(QString().sprintf("%u.%02u-%u", DOUBLESCANNER_VERSION_MAJOR, DOUBLESCANNER_VERSION_MINOR, DOUBLESCANNER_VERSION_PATCH))));
-	stream.writeComment(tmpl.arg(tr("Copyright (c) 2014 LoRd_MuldeR <mulder2@gmx.de>. Some rights reserved.")));
+	stream.writeComment(tmpl.arg(tr("Copyright (C) 2014-2017 LoRd_MuldeR <MuldeR2@GMX.de>. Some rights reserved.")));
 	stream.writeComment(tmpl.arg(tr("=====================================================================")));
 
 	stream.writeStartElement("Duplicates");
