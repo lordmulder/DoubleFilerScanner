@@ -8,7 +8,7 @@ Version History
 Version 2.04 [2017-04-22]
 - Make it possible to suspend/resume the scanning process
 - Upgraded Qt Framework libraries to v4.8.7
-- Upgraded build environment to Visual Studio 2015
+- Upgraded build environment to Visual Studio 2015.3
 
 Version 2.03 [2014-06-22]
 - Performance optimizations

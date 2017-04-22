@@ -2,9 +2,8 @@
 REM ///////////////////////////////////////////////////////////////////////////
 REM // Set Paths
 REM ///////////////////////////////////////////////////////////////////////////
-set "MSVC_PATH=C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
-set "QTVC_PATH=C:\Qt\4.8.6"
-set "UPX3_PATH=C:\Program Files (x86)\UPX"
+set "MSVC_PATH=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
+set "QTVC_PATH=C:\Qt\4.8.7"
 
 REM ###############################################
 REM # DO NOT MODIFY ANY LINES BELOW THIS LINE !!! #
@@ -43,11 +42,11 @@ REM // Get current date and time (in ISO format)
 REM ///////////////////////////////////////////////////////////////////////////
 set "ISO_DATE="
 set "ISO_TIME="
-if not exist "%~dp0\etc\date.exe" BuildError
-for /F "tokens=1,2 delims=:" %%a in ('"%~dp0\etc\date.exe" +ISODATE:%%Y-%%m-%%d') do (
+if not exist "%~dp0\..\Prerequisites\GnuWin32\date.exe" BuildError
+for /F "tokens=1,2 delims=:" %%a in ('"%~dp0\..\Prerequisites\GnuWin32\date.exe" +ISODATE:%%Y-%%m-%%d') do (
 	if "%%a"=="ISODATE" set "ISO_DATE=%%b"
 )
-for /F "tokens=1,2,3,4 delims=:" %%a in ('"%~dp0\etc\date.exe" +ISOTIME:%%T') do (
+for /F "tokens=1,2,3,4 delims=:" %%a in ('"%~dp0\..\Prerequisites\GnuWin32\date.exe" +ISOTIME:%%T') do (
 	if "%%a"=="ISOTIME" set "ISO_TIME=%%b:%%c:%%d"
 )
 if "%ISO_DATE%"=="" goto BuildError
@@ -82,7 +81,7 @@ copy "%~dp0\*.html" "%PACK_PATH%"
 REM ///////////////////////////////////////////////////////////////////////////
 REM // Compress
 REM ///////////////////////////////////////////////////////////////////////////
-"%UPX3_PATH%\upx.exe" --best  "%PACK_PATH%\*.exe"
+"%~dp0\..\Prerequisites\UPX\upx.exe" --best  "%PACK_PATH%\*.exe"
 
 REM ///////////////////////////////////////////////////////////////////////////
 REM // Attributes
@@ -106,7 +105,7 @@ REM ///////////////////////////////////////////////////////////////////////////
 REM // Create version tag
 REM ///////////////////////////////////////////////////////////////////////////
 echo Double File Scanner > "%~dp0\out\%OUT_NAME%.txt"
-echo Copyright (C) 2014 LoRd_MuldeR ^<MuldeR2@GMX.de^> >> "%~dp0\out\%OUT_NAME%.txt"
+echo Copyright (C) 2017 LoRd_MuldeR ^<MuldeR2@GMX.de^> >> "%~dp0\out\%OUT_NAME%.txt"
 echo Built %ISO_DATE%, %TIME% >> "%~dp0\out\%OUT_NAME%.txt"
 echo. >> "%~dp0\out\%OUT_NAME%.txt"
 echo This program is free software; you can redistribute it and/or modify >> "%~dp0\out\%OUT_NAME%.txt"
@@ -118,7 +117,7 @@ REM ///////////////////////////////////////////////////////////////////////////
 REM // Build the package
 REM ///////////////////////////////////////////////////////////////////////////
 pushd "%PACK_PATH%
-"%~dp0\etc\zip.exe" -9 -r -z "%~dp0\out\%OUT_NAME%.zip" "*.*" < "%~dp0\out\%OUT_NAME%.txt"
+"%~dp0\..\Prerequisites\GnuWin32\zip.exe" -9 -r -z "%~dp0\out\%OUT_NAME%.zip" "*.*" < "%~dp0\out\%OUT_NAME%.txt"
 popd
 rmdir /Q /S "%PACK_PATH%"
 attrib +R "%~dp0\out\%OUT_NAME%.zip"
