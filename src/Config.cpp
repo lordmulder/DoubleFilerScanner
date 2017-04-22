@@ -48,7 +48,13 @@ const char* DOUBLESCANNER_BUILD_TIME = __TIME__;
 		#error Compiler is not supported!
 	#endif
 #elif defined(_MSC_VER)
-	#if (_MSC_VER == 1800)
+	#if (_MSC_VER == 1900)
+		#if (_MSC_FULL_VER >= 190024210) && (_MSC_FULL_VER <= 190024215)
+			const char *DOUBLESCANNER_COMPILER = "MSVC 2015.3";
+		#else
+			#error Compiler version is not supported yet!
+		#endif
+	#elif (_MSC_VER == 1800)
 		#if (_MSC_FULL_VER < 180021005)
 			const char *DOUBLESCANNER_COMPILER = "MSVC 2013-Beta";
 		#elif (_MSC_FULL_VER < 180030501)

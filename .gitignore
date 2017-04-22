@@ -3,6 +3,7 @@
 *.suo
 *.user
 *.local.*
+*.VC.db
 /bin
 /ipch
 /doc
